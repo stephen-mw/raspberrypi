@@ -25,9 +25,6 @@ read PUBLIC_KEY
 apt-get -y update
 apt-get -y upgrade
 
-# Remove some unnecessary packages
-apt-get purge -y --force-yes xinet
-
 # Install some base packages
 apt-get install -y --force-yes dnsutils g++ gcc ipython \
 make ntp python python-pip vim vlc
