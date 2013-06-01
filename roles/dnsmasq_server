@@ -54,3 +54,5 @@ echo $URLS | xargs -I^ -P50 dig @127.0.0.1 grep time | awk /time/'{sum+=$4} END 
 echo $URLS | xargs -I^ -P50 dig @127.0.0.1 grep time | awk /time/'{sum+=$4} END { print "average response = ", sum/NR,"ms"}'
 echo $URLS | xargs -I^ -P50 dig @127.0.0.1 grep time | awk /time/'{sum+=$4} END { print "average response = ", sum/NR,"ms"}'
 echo $URLS | xargs -I^ -P50 dig @127.0.0.1 grep time | awk /time/'{sum+=$4} END { print "average response = ", sum/NR,"ms"}'
+
+echo 'Installation complete. Enjoy!'
