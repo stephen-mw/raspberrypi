@@ -58,21 +58,26 @@ cat > /etc/cron.daily/pimasq_updater <<'UPDATER'
 
 HOSTFILE="/etc/advert.hosts"
 
+# Empty the tmp file we'll use to download the files
+> $HOSTFILE.raw
+
 # These are the original (sometimes slow) sources for our hosts. Uncomment these lines 
 # to draw from them instead of the aggregate mirror.
 #
 #HOSTS="http://winhelp2002.mvps.org/hosts.txt                         \
 #       http://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts \
 #       http://hostsfile.mine.nu/Hosts"
+# Clear out our host file and make it new again
+#for host in $HOSTS; do
+#  curl -s -L "$host" | grep -P "^127\.0\.0\.1\s" | >> $HOSTFILE.raw
+#done
 
 # The aggregate mirror of the above urls. Updated nightly.
-HOST="http://publius.heystephenwood.com/advert.hosts"
+curl -s -L "http://publius.heystephenwood.com/advert.hosts" > $HOSTFILE.raw
 
-# Clear out our host file and make it new again
-> $HOSTFILE 
-for host in $HOSTS; do
-  curl -s -L "$host" >> $HOSTFILE
-done
+# Moving these files at the end prevents disruption while you're downloading
+# the host list.
+mv $HOSTFILE.raw $HOSTFILE
 
 service dnsmasq restart
 
