@@ -1,0 +1,95 @@
+#!/bin/bash
+set -e
+
+# Raspberry Pi dnsmasq script
+# Stephen Wood
+# www.heystephenwood.com
+# 
+# Usage: $ sudo ./dnsmasq_adblocker
+#
+# Net install:
+#   $ curl "https://raw.github.com/stephendotexe/raspberrypi/master/roles/dnsmasq_adblocker" | sudo sh
+
+# This sets up your raspberry pi as a dns server and blocks access to ad sites.
+#
+# Works for every device on your network -- ipads, phones, even smart TVs!
+
+# Must be run as root
+if [[ `whoami` != "root" ]]
+then
+  echo "This install must be run as root or with sudo."
+  exit
+fi
+
+# Download the hero of this story
+apt-get install -y dnsmasq
+
+# This is where we'll store our dnsmasq configs
+cat - > /etc/dnsmasq.d/pimasq.conf <<DNSMASQCONF
+# Dnsmasq.conf for raspberry pi
+# By Stephen Wood heystephenwood.com
+# Full examples found here:
+# http://www.thekelleys.org.uk/dnsmasq/docs/dnsmasq.conf.example
+
+# Set up your local domain here
+domain=raspberry.local
+resolv-file=/etc/resolv.dnsmasq
+min-port=4096
+server=8.8.8.8
+server=8.8.4.4
+
+# Max cache size dnsmasq can give us, and we want all of it!
+cache-size=10000
+
+# The location our adblocking hostfile
+addn-hosts=/etc/advert.hosts
+
+# Below are settings for dhcp. Comment them out if you dont want
+# dnsmasq to serve up dhcpd requests.
+# dhcp-range=192.168.0.100,192.168.0.149,255.255.255.0,1440m
+# dhcp-option=3,192.168.0.1
+# dhcp-authoritative
+
+DNSMASQCONF
+
+# This is the script that will run daily to update the dns entries for ad sites
+cat > /etc/cron.daily/pimasq_updater <<'UPDATER'
+#!/bin/bash
+
+HOSTFILE="/etc/advert.hosts"
+
+# These are the original (sometimes slow) sources for our hosts. Uncomment these lines 
+# to draw from them instead of the aggregate mirror.
+#
+#HOSTS="http://winhelp2002.mvps.org/hosts.txt                         \
+#       http://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts \
+#       http://hostsfile.mine.nu/Hosts"
+
+# The aggregate mirror of the above urls. Updated nightly.
+HOST="http://publius.heystephenwood.com/advert.hosts"
+
+# Clear out our host file and make it new again
+> $HOSTFILE 
+for host in $HOSTS; do
+  curl -s -L "$host" >> $HOSTFILE
+done
+
+service dnsmasq restart
+
+UPDATER
+
+# Things in cron need to be executable
+chmod +x /etc/cron.daily/pimasq_updater
+
+# Run it once so that we have a working hostfile
+/etc/cron.daily/pimasq_updater #> /dev/null
+
+service dnsmasq restart
+
+cat <<CLOSE_MESSAGE
+
+Bootstrap finished!
+
+Hello Raspberry Pi. Goodbye ads.
+
+CLOSE_MESSAGE
