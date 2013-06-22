@@ -31,7 +31,8 @@ make ntp python python-pip vim vlc
 
 # Update hostname
 echo "$NEW_HOSTNAME" > /etc/hostname
-sed -i 's/pi/$NEW_HOSTNAME/' /etc/hosts
+sed -i "s/raspberrypi/$NEW_HOSTNAME/" /etc/hosts
+hostname $NEW_HOSTNAME
 
 # Set VIM as the default editor
 update-alternatives --set editor /usr/bin/vim.basic
