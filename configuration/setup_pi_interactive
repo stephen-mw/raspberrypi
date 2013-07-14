@@ -21,13 +21,18 @@ echo -n "Password for user (leave blank for disabled): "
 read PASS_PROMPT
 echo -n "Paste public key (leave blank for disabled): "
 read PUBLIC_KEY
+echo -n "Optionally supply an apt-mirror (press enter to skip): "
+read MIRROR
+
+if [[ "$MIRROR" != "" ]]
+then
+  echo "Acquire::http { proxy '$MIRROR'; };" > /etc/apt/apt.conf.d/02proxy
+fi
 
 apt-get -y update
-apt-get -y upgrade
 
 # Install some base packages
-apt-get install -y --force-yes dnsutils g++ gcc ipython \
-make ntp python python-pip vim vlc
+apt-get install -y --force-yes git screen vim
 
 # Update hostname
 echo "$NEW_HOSTNAME" > /etc/hostname
