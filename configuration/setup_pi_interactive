@@ -66,6 +66,19 @@ sed -i 's/%sudo.*/%sudo   ALL=NOPASSWD: ALL/g' /etc/sudoers
 # Turn off password authentication 
 sed -i 's/#   PasswordAuthentication yes/    PasswordAuthentication no/g' /etc/ssh/ssh_config
 
+# Vim settings (syntax highlighting, tab space, etc).
+cat > /home/$NEW_USER/.vimrc <<VIM
+syntax on
+set t_Co=256
+
+set paste
+set softtabstop=2
+set tabstop=2
+set shiftwidth=2
+set expandtab
+
+VIM
+
 # Now for some memory tweaks!
 # Remove unnecessary consoles
 sed -ie 's|l4:4:wait:/etc/init.d/rc 4|#l4:4:wait:/etc/init.d/rc 4|g' /etc/inittab
