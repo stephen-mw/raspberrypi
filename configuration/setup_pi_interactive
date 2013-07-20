@@ -68,14 +68,14 @@ sed -i 's/#   PasswordAuthentication yes/    PasswordAuthentication no/g' /etc/s
 
 # Vim settings (syntax highlighting, tab space, etc).
 cat > /home/$NEW_USER/.vimrc <<VIM
-syntax on
-set t_Co=256
+:syntax on
+:set t_Co=256
 
-set paste
-set softtabstop=2
-set tabstop=2
-set shiftwidth=2
-set expandtab
+:set paste
+:set softtabstop=2
+:set tabstop=2
+:set shiftwidth=2
+:set expandtab
 
 VIM
 
