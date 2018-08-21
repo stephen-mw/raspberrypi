@@ -78,11 +78,10 @@ function configure_chrony(){
 
 function configure_gpsd(){
     # Disable the old gpsd daemon
+    update-rc.d -f gpsd remove
+
     /etc/init.d/gpsd stop || true
     chmod -x /etc/init.d/gpsd
-
-    # Add the gpsd user to a group which can read /dev/pps0 and ttyS0 (gps)
-    usermod -a -G tty gps
 
     curl 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/gps.service' \
         > /etc/systemd/system/gps.service
