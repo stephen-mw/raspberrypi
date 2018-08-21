@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -exuo pipefail
 
 # Stratum-1 timeservers use GPS modules to keep highly accurate time from
 # atomic clocks in GPS satellites
@@ -78,15 +78,14 @@ function configure_chrony(){
 
 function configure_gpsd(){
     # Disable the old gpsd daemon
-    update-rc.d -f gpsd remove
-
+    update-rc.d -f gpsd remove || true
     /etc/init.d/gpsd stop || true
     test -f /etc/init.d/gpsd && chmod -x /etc/init.d/gpsd
 
     curl 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/gps.service' \
-        > /etc/systemd/system/gps.service
+        > /etc/systemd/system/gpsd.service
     systemctl daemon-reload
-    systemctl enable gpsd    
+    systemctl enable gpsd
 }
 
 function help_message(){
