@@ -43,6 +43,10 @@ BOOT
 }
 
 function configure_chrony(){
+    # Stop and disable NTP if it was enabled
+    systemctl stop ntp || true
+    systemctl disable ntp || true
+
     pushd /usr/local/src
     if [[ -d chrony ]]; then
         rm -rfv -- chrony
