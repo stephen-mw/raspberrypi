@@ -1,0 +1,11 @@
+[Unit]
+Description=Chrony Time Daemon
+
+[Service]
+User=root
+ExecStart=/usr/local/sbin/chronyd -d -4
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Stratum-1 timeservers use GPS modules to keep highly accurate time from
+# atomic clocks in GPS satellites
+#
+# This script assumes you have the PPS pin attached to GPIO 18 on your rasp-
+# berrypi, as well as the TX on your GPS module attached to UART0_RXD
+# (GPIO pin 15)
+
+# The GPIO pin connected to PPS
+export PPS_GPIO=18
+
+function install_required(){
+    apt update -y
+    apt upgrade -y
+    rpi-update
+
+    apt install -y asciidoctor bison curl git libcap-dev gpsd-clients pps-tools gpsd
+}
+
+function setup_serial(){
+    # The PPS (pulse-per-second) module on the GPS chip helps the RPI keep the
+    # real-time clock highly accurate
+    cp /boot/config.txt "/boot/config.txt_backup_$(date +%s)"
+    cat >> /boot/config.txt<<BOOT
+    
+# Enable serial input
+enable_uart=1
+
+# Set the PPS GPIO pin for the kernel
+dtoverlay=pps-gpio,gpiopin=${PPS_GPIO}
+BOOT
+}
+
+function configure_chrony(){
+    pushd /usr/local/src
+    if [[ -d chrony ]]; then
+        rm -rfv -- chrony
+    fi
+
+    git clone https://git.tuxfamily.org/chrony/chrony.git
+    pushd chrony
+    ./configure --enable-debug
+    make
+    make docs
+    make install
+    make install-docs
+
+    curl 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/chrony.conf' \
+        > /etc/chrony.conf
+    curl 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/chrony.service' \
+        > /etc/systemd/system/chrony.service
+
+    systemctl daemon-reload
+    systemctl enable chrony
+
+    rm -rfv -- chrony
+}
+
+function configure_gpsd(){
+    curl 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/gps.service' \
+        > /etc/systemd/system/gps.service
+    systemctl daemon-reload
+    systemctl enable gpsd    
+}
+
+function help_message(){
+cat <<HELP
+
+### Installation Complete! ##
+
+You must reboot before your system will work!
+
+To test the PPS pin:
+
+    $ ppstest /dev/pps0
+    
+To test your GPS lock:
+
+    $ cgps
+
+Good luck!
+
+HELP
+}
+
+install_required
+setup_serial
+configure_chrony
+configure_gpsd
+help_message

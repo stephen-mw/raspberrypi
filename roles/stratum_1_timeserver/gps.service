@@ -1,0 +1,11 @@
+[Unit]
+Description=GPS daemon
+
+[Service]
+User=root
+ExecStart=/usr/sbin/gpsd -n -N /dev/ttyS0 /dev/pps0
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
