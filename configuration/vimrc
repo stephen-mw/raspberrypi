@@ -1,0 +1,72 @@
+"Don't load default vim configs
+let skip_defaults_vim=1
+
+set showcmd
+set modifiable
+
+filetype on
+filetype plugin on 
+
+:syntax on
+
+set smartindent
+set statusline+=%#warningmsg#
+set backspace=indent,eol,start
+
+" Enable modelines (the things at the tops of files that allow you to alter VIM's
+" natural behavior
+set modelines=5
+
+set laststatus=2
+set t_Co=256
+set paste
+set softtabstop=4
+set tabstop=4
+set shiftwidth=4
+set expandtab
+
+" To get backspace work
+set backspace=2
+
+" Search ignore case, realtime highlight, highlight all
+set ignorecase
+set incsearch
+set hlsearch
+
+" Turn on line nums by default but \n turns them off 
+set nu
+:nmap \n :set number!<CR>
+
+"Found at: https://github.com/tylertreat/dotfiles/blob/master/vimrc
+set statusline=%t                               "tail of the filename
+set statusline+=[%{strlen(&fenc)?&fenc:'none'}, "file encoding
+set statusline+=%{&ff}]                         "file format
+set statusline+=%h                              "help file flag
+set statusline+=%m                              "modified flag
+set statusline+=%r                              "read only flag
+set statusline+=%y                              "filetype
+set statusline+=%=                              "left/right separator
+set statusline+=%c,                             "cursor column
+set statusline+=%l/%L                           "cursor line/total lines
+set statusline+=\ %P                            "percent through file
+
+" Show limit line of 80 chars and highlight with blue
+set colorcolumn=80
+hi ColorColumn cterm=NONE ctermbg=17
+
+
+" Highlighting of the current line. Uses a dark, almost translucent black color
+set cul
+hi CursorLine   cterm=NONE ctermbg=234 ctermfg=NONE
+
+" Allow comments of blocks
+" #  -- comment block
+" -# -- uncomment block
+vnoremap # :s#^#\##<cr>
+vnoremap -# :s#^\###<cr>
+
+" Add pdb break points for python files. \b current line or \B line above
+au FileType python map <silent> <leader>b oimport pdb; pdb.set_trace()<esc>
+
+" Automatically use tabs in makefiles
+autocmd FileType make setlocal noexpandtab

@@ -30,6 +30,8 @@ function install_packages(){
         screen        \
         ssh-import-id \
         wget          \
+        ntp           \
+        rng-tools     \
         vim
 
     rpi-update
@@ -39,23 +41,9 @@ function setup_vim(){
     # Set VIM as the default editor
     update-alternatives --set editor /usr/bin/vim.basic
 
-    mkdir -p /home/${NEW_USER}/.vim/colors
-    wget "http://www.vim.org/scripts/download_script.php?src_id=11157" \
-      -O /home/${NEW_USER}/.vim/colors/synic
-
     # Vim settings (colors, syntax highlighting, tab space, etc).
-    cat > /home/$NEW_USER/.vimrc <<VIM
-:syntax on
-:set t_Co=256
-
-:set paste
-:set softtabstop=4
-:set tabstop=4
-:set shiftwidth=4
-:set expandtab
-
-:colorscheme synic
-VIM
+    curl 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/configuration/vimrc' \
+        > /etc/vim/vimrc.local
 }
 
 function setup_user(){
