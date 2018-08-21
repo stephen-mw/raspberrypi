@@ -18,7 +18,7 @@ export NEW_USER="smw"
 export GITHUB_USER="stephen-mw"
 
 function install_packages(){
-    echo "Acquire::http { proxy '$MIRROR'; };" > /etc/apt/apt.conf.d/02proxy
+    echo "Acquire::http { proxy '${MIRROR}'; };" > /etc/apt/apt.conf.d/02proxy
 
     apt update -y
     apt upgrade -y
@@ -59,7 +59,10 @@ VIM
 }
 
 function setup_user(){
-    useradd -m -s /bin/bash -G sudo ${NEW_USER}
+    if ! $(id -u ${NEW_USER}); then
+        useradd -m -s /bin/bash -G sudo ${NEW_USER}
+    fi
+
     ssh-import-id smw gh:stephen-mw
 
     # Remove Pi user's password
@@ -78,3 +81,8 @@ function setup_system(){
     # Turn off password authentication 
     sed -i 's/#   PasswordAuthentication yes/    PasswordAuthentication no/g' /etc/ssh/ssh_config
 }
+
+install_packages
+setup_user
+setup_system
+setup_vim
