@@ -9,7 +9,7 @@ set -euxo pipefail
 # Author: Stephen Wood (www.heystephenwood.com)
 
 # This is my apt-cacher mirror
-export MIRROR="cato:3142"
+export MIRROR="http://cato:3142"
 
 # Our new user -- me
 export NEW_USER="smw"
