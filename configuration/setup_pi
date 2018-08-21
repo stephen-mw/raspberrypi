@@ -18,7 +18,7 @@ export NEW_USER="smw"
 export GITHUB_USER="stephen-mw"
 
 function install_packages(){
-    echo "Acquire::http { proxy '${MIRROR}'; };" > /etc/apt/apt.conf.d/02proxy
+    echo "Acquire::http::Proxy 'http://cato:3142';" > /etc/apt/apt.conf.d/01proxy
 
     apt update -y
     apt upgrade -y
