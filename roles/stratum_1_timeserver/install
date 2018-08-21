@@ -81,7 +81,7 @@ function configure_gpsd(){
     update-rc.d -f gpsd remove
 
     /etc/init.d/gpsd stop || true
-    chmod -x /etc/init.d/gpsd
+    test -f /etc/init.d/gpsd && chmod -x /etc/init.d/gpsd
 
     curl 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/gps.service' \
         > /etc/systemd/system/gps.service
