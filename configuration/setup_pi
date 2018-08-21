@@ -59,9 +59,10 @@ VIM
 }
 
 function setup_user(){
-    if ! $(id -u ${NEW_USER}); then
+    if ! id -u ${NEW_USER}; then
         useradd -m -s /bin/bash -G sudo ${NEW_USER}
     fi
+
     if ! [[ -d ~smw/.ssh ]]; then
         mkdir ~smw/.ssh
     fi
@@ -70,8 +71,16 @@ function setup_user(){
     chmod 600 ~smw/.ssh/authorized_keys
     chown -R smw:smw ~smw
 
-    # Remove Pi user's password
-    passwd -d pi
+    # Banish the Pi user
+    if id -u pi; then
+        userdel -rf pi
+    fi
+
+    # Remove all sudoers and allow new user to sudo without passsword
+    test -f /etc/sudoers.d/010_pi-nopasswd && rm -fv /etc/sudoers.d/010_pi-nopasswd
+    cat >/etc/sudoers.d/01${NEW_USER}<<SUDO
+${NEW_USER} ALL=(ALL) NOPASSWD: ALL
+SUDO
 }
 
 
@@ -80,9 +89,7 @@ function setup_system(){
     systemctl enable ssh
     systemctl start ssh
 
-    # Allow users in the sudo group to sudo without password
-    sed -i 's/%sudo.*/%sudo   ALL=NOPASSWD: ALL/g' /etc/sudoers
-
+    
     # Turn off password authentication 
     sed -i 's/#   PasswordAuthentication yes/    PasswordAuthentication no/g' /etc/ssh/ssh_config
 }
