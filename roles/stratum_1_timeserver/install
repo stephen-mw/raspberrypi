@@ -16,7 +16,16 @@ function install_required(){
     apt upgrade -y
     rpi-update
 
-    apt install -y asciidoctor bison curl git libcap-dev gpsd-clients pps-tools gpsd
+    apt install -y      \
+        asciidoctor     \
+        bison           \
+        build-essential \
+        curl            \
+        git             \
+        gpsd            \
+        gpsd-clients    \
+        libcap-dev      \
+        pps-tools
 }
 
 function setup_serial(){
