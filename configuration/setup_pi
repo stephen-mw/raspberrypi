@@ -39,15 +39,6 @@ function setup_vim(){
     # Set VIM as the default editor
     update-alternatives --set editor /usr/bin/vim.basic
 
-}
-
-function setup_user(){
-    useradd -m -s /bin/bash -G sudo ${NEW_USER}
-    ssh-import-id smw gh:stephen-mw
-
-    # Remove Pi user's password
-    passwd -d pi
-
     mkdir -p /home/${NEW_USER}/.vim/colors
     wget "http://www.vim.org/scripts/download_script.php?src_id=11157" \
       -O /home/${NEW_USER}/.vim/colors/synic
@@ -65,11 +56,22 @@ function setup_user(){
 
 :colorscheme synic
 VIM
+}
 
+function setup_user(){
+    useradd -m -s /bin/bash -G sudo ${NEW_USER}
+    ssh-import-id smw gh:stephen-mw
+
+    # Remove Pi user's password
+    passwd -d pi
 }
 
 
 function setup_system(){
+    # SSH isn't enabled by default?
+    systemctl enable ssh
+    systemctl start ssh
+
     # Allow users in the sudo group to sudo without password
     sed -i 's/%sudo.*/%sudo   ALL=NOPASSWD: ALL/g' /etc/sudoers
 
