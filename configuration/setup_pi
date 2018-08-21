@@ -1,0 +1,78 @@
+#!/bin/bash
+set -euxo pipefail
+
+# My raspberry pi setup file
+#
+# Warning! This will download my public keys to your user. Change this before
+# running it!
+#
+# Author: Stephen Wood (www.heystephenwood.com)
+
+# This is my apt-cacher mirror
+export MIRROR="cato:3142"
+
+# Our new user -- me
+export NEW_USER="smw"
+
+# My github user. Will pull these public keys
+export GITHUB_USER="stephen-mw"
+
+function install_packages(){
+    echo "Acquire::http { proxy '$MIRROR'; };" > /etc/apt/apt.conf.d/02proxy
+
+    apt update -y
+    apt upgrade -y
+
+    apt install -y    \
+        curl          \
+        git           \
+        rpi-update    \
+        screen        \
+        ssh-import-id \
+        wget          \
+        vim
+
+    rpi-update
+}
+
+function setup_vim(){
+    # Set VIM as the default editor
+    update-alternatives --set editor /usr/bin/vim.basic
+
+}
+
+function setup_user(){
+    useradd -m -s /bin/bash -G sudo ${NEW_USER}
+    ssh-import-id smw gh:stephen-mw
+
+    # Remove Pi user's password
+    passwd -d pi
+
+    mkdir -p /home/${NEW_USER}/.vim/colors
+    wget "http://www.vim.org/scripts/download_script.php?src_id=11157" \
+      -O /home/${NEW_USER}/.vim/colors/synic
+
+    # Vim settings (colors, syntax highlighting, tab space, etc).
+    cat > /home/$NEW_USER/.vimrc <<VIM
+:syntax on
+:set t_Co=256
+
+:set paste
+:set softtabstop=4
+:set tabstop=4
+:set shiftwidth=4
+:set expandtab
+
+:colorscheme synic
+VIM
+
+}
+
+
+function setup_system(){
+    # Allow users in the sudo group to sudo without password
+    sed -i 's/%sudo.*/%sudo   ALL=NOPASSWD: ALL/g' /etc/sudoers
+
+    # Turn off password authentication 
+    sed -i 's/#   PasswordAuthentication yes/    PasswordAuthentication no/g' /etc/ssh/ssh_config
+}
