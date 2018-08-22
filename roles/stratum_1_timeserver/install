@@ -40,6 +40,20 @@ enable_uart=1
 # Set the PPS GPIO pin for the kernel
 dtoverlay=pps-gpio,gpiopin=${PPS_GPIO}
 BOOT
+
+    # Keep the serial process from resetting permissions
+    systemctl stop serial-getty@ttyS0.service
+    systemctl disable serial-getty@ttyS0.service
+    test -f /lib/systemd/system/serial-getty@.service && mv /lib/systemd/system/serial-getty@.service{,_backup}
+
+    # Setup the udev rules so that the devices are readable by gpsd
+    if [[ -f "/etc/udev/rules.d/99-com.rules" ]]; then
+        mv /etc/udev/rules.d/99-com.rules /etc/udev/rules.d/98-com.rules
+    fi
+    cat > /etc/udev/rules.d/99-gps.rules<<RULES
+KERNEL=="ttyS0",     GROUP="tty", MODE="0644", ACTION=="add"
+KERNEL=="pps[0-9]*", GROUP="tty", MODE="0644", ACTION=="add"
+RULES
 }
 
 function configure_chrony(){
@@ -53,7 +67,7 @@ function configure_chrony(){
     fi
 
     if ! id -u chrony; then
-        useradd --system -s /bin/false -d /tmp chrony 
+        useradd --system -s /bin/false -d /tmp -G tty chrony 
     fi
 
     git clone https://git.tuxfamily.org/chrony/chrony.git
@@ -65,9 +79,9 @@ function configure_chrony(){
     make install
     make install-docs
 
-    curl 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/chrony.conf' \
+    curl -fs 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/chrony.conf' \
         > /etc/chrony.conf
-    curl 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/chrony.service' \
+    curl -fs 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/chrony.service' \
         > /etc/systemd/system/chrony.service
 
     systemctl daemon-reload
@@ -77,13 +91,17 @@ function configure_chrony(){
 }
 
 function configure_gpsd(){
-    # Disable the old gpsd daemon
-    update-rc.d -f gpsd remove || true
-    /etc/init.d/gpsd stop || true
-    test -f /etc/init.d/gpsd && chmod -x /etc/init.d/gpsd
+    /etc/init.d/gpsd stop  || true
+    systemctl stop gpsd    || true
+    systemctl disable gpsd || true
+    rm -rfv /lib/systemd/system/gpsd* || true
+    
+    test -f /etc/init.d/gpsd && rm -rfv /etc/init.d/gpsd
 
-    curl 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/gps.service' \
+    curl -fs 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/gpsd.service' \
         > /etc/systemd/system/gpsd.service
+
+    usermod -a -G tty gpsd
     systemctl daemon-reload
     systemctl enable gpsd
 }
@@ -111,6 +129,6 @@ HELP
 
 install_required
 setup_serial
-configure_chrony
+#configure_chrony
 configure_gpsd
 help_message

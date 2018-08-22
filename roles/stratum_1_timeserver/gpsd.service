@@ -2,7 +2,7 @@
 Description=GPS daemon
 
 [Service]
-User=gpsd
+User=root
 ExecStart=/usr/sbin/gpsd -n -N /dev/ttyS0 /dev/pps0
 KillMode=process
 Restart=on-failure
