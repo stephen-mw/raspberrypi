@@ -88,6 +88,19 @@ ${NEW_USER} ALL=(ALL) NOPASSWD: ALL
 SUDO
 }
 
+function setup_ssh_keys(){
+    # Make sure rng-tools is running
+    systemctl start rng-tools
+    pushd /etc/ssh/
+    rm -rfv -- *_key
+    rm -rfv -- *\.pub
+
+    echo 'Generating a new SSH key. Can take a minute or more...'
+    yes y | ssh-keygen -t rsa -b 4096 -f ssh_host_rsa_key -N ''
+    ssh-keygen -y -f ssh_host_rsa_key >> ssh_host_rsa_pub
+
+    systemctl sshd restart
+}
 
 function setup_system(){
     # SSH isn't enabled by default?
@@ -111,4 +124,5 @@ setup_locale
 install_packages
 setup_user
 setup_system
+setup_ssh_keys
 setup_vim
