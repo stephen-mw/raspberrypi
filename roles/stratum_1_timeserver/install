@@ -51,8 +51,8 @@ BOOT
         mv /etc/udev/rules.d/99-com.rules /etc/udev/rules.d/98-com.rules
     fi
     cat > /etc/udev/rules.d/99-gps.rules<<RULES
-KERNEL=="ttyS0",     GROUP="tty", MODE="0644", ACTION=="add"
-KERNEL=="pps[0-9]*", GROUP="tty", MODE="0644", ACTION=="add"
+KERNEL=="ttyS0",     GROUP="tty", MODE="0664", ACTION=="add"
+KERNEL=="pps[0-9]*", GROUP="tty", MODE="0664", ACTION=="add"
 RULES
 }
 
@@ -60,6 +60,10 @@ function configure_chrony(){
     # Stop and disable NTP if it was enabled
     systemctl stop ntp || true
     systemctl disable ntp || true
+
+    # Disable systemd's time service
+    systemctl stop systemd-timesyncd.service
+    systemctl disable systemd-timesyncd.service
 
     pushd /usr/local/src
     if [[ -d chrony ]]; then
@@ -83,6 +87,9 @@ function configure_chrony(){
         > /etc/chrony.conf
     curl -fs 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/chrony.service' \
         > /etc/systemd/system/chrony.service
+
+    mkdir /var/log/chrony || true
+    chown -R chrony:chrony /var/log/chrony
 
     systemctl daemon-reload
     systemctl enable chrony
@@ -129,6 +136,6 @@ HELP
 
 install_required
 setup_serial
-#configure_chrony
+configure_chrony
 configure_gpsd
 help_message
