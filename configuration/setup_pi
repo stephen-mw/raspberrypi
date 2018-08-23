@@ -17,6 +17,23 @@ export NEW_USER="smw"
 # My github user. Will pull these public keys
 export GITHUB_USER="stephen-mw"
 
+function setup_local(){
+    # Set the wifi
+    echo 'country=US' >> /etc/wpa_supplicant/wpa_supplicant.conf
+
+    # Set language to EN
+    echo 'LANG=en_US.UTF-8' > /etc/default/locale
+
+    # Set the keyboard to US
+    cat > /etc/default/keyboard<<KEYBOARD
+XKBMODEL="pc105"
+XKBLAYOUT="us"
+XKBVARIANT=""
+XKBOPTIONS=""
+BACKSPACE="guess"
+KEYBOARD
+}
+
 function install_packages(){
     echo "Acquire::http::Proxy \"${MIRROR}\";" > /etc/apt/apt.conf.d/01proxy
 
@@ -90,6 +107,7 @@ alias ll="ls -ltr"
 CUSTOM
 }
 
+setup_locale
 install_packages
 setup_user
 setup_system
