@@ -89,7 +89,7 @@ function configure_chrony(){
         > /etc/systemd/system/chrony.service
 
     mkdir /var/log/chrony || true
-    chown -R chrony:chrony /var/log/chrony
+    chown -Rv chrony:chrony /var/log/chrony /var/lib/chrony
 
     systemctl daemon-reload
     systemctl enable chrony
