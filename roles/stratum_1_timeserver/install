@@ -47,8 +47,8 @@ GPSD_OPTIONS="-r -N"
 GPS_CONF
 
     # We're not going to be using the socket so disable it
-    systemctl stop gpsd.socket
-    systemctl disable gpsd.socket
+    systemctl stop gpsd.socket    || true
+    systemctl disable gpsd.socket || true
     test -f /lib/systemd/system/gpsd.socket && rm -fv -- /lib/systemd/system/gpsd.socket
 
     curl -fs 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/gpsd.service' \
@@ -72,8 +72,8 @@ dtoverlay=pps-gpio,gpiopin=${PPS_GPIO}
 BOOT
 
     # Keep the serial process from resetting permissions
-    systemctl stop serial-getty@ttyS0.service
-    systemctl disable serial-getty@ttyS0.service
+    systemctl stop serial-getty@ttyS0.service    || true
+    systemctl disable serial-getty@ttyS0.service || true
     test -f /lib/systemd/system/serial-getty@.service && mv /lib/systemd/system/serial-getty@.service{,_backup}
 
     # Setup the udev rules so that the devices are readable by gpsd
@@ -88,12 +88,12 @@ RULES
 
 function configure_chrony(){
     # Stop and disable NTP if it was enabled
-    systemctl stop ntp || true
+    systemctl stop ntp    || true
     systemctl disable ntp || true
 
     # Disable systemd's time service
-    systemctl stop systemd-timesyncd.service
-    systemctl disable systemd-timesyncd.service
+    systemctl stop systemd-timesyncd.service    || true
+    systemctl disable systemd-timesyncd.service || true
 
     pushd /usr/local/src
     if [[ -d chrony ]]; then
