@@ -18,19 +18,23 @@ function install_required(){
 
     apt install -y      \
         asciidoctor     \
-        bison           \
         build-essential \
+        chrpath         \
         curl            \
         git             \
         gpsd-clients    \
         libcap-dev      \
         pps-tools       \
+        python-dev      \
+        scons           \
         sendmail 
 }
 
 function compile_gpsd(){
-    # You should have a version of gpsd 3.17 or higher
-    apt install -y scons chrpath python-dev
+    # You should have a version of gpsd 3.17 or higher, so we'll compile it
+    if ! id -u gpsd; then
+        useradd -s /bin/false --system -G tty,dialout gpsd
+    fi
 
     pushd /usr/local/src
     git clone https://git.savannah.gnu.org/git/gpsd.git
@@ -46,6 +50,12 @@ GPS_CONF
     systemctl stop gpsd.socket
     systemctl disable gpsd.socket
     test -f /lib/systemd/system/gpsd.socket && rm -fv -- /lib/systemd/system/gpsd.socket
+
+    curl -fs 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/gpsd.service' \
+        > /lib/systemd/system/gpsd.service
+
+    systemctl daemon-reload
+    systemctl enable gpsd
 }
 
 function setup_serial(){
@@ -118,19 +128,6 @@ function configure_chrony(){
 }
 
 function configure_gpsd(){
-    /etc/init.d/gpsd stop  || true
-    systemctl stop gpsd    || true
-    systemctl disable gpsd || true
-    rm -rfv /lib/systemd/system/gpsd* || true
-    
-    test -f /etc/init.d/gpsd && rm -rfv /etc/init.d/gpsd
-
-    curl -fs 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/gpsd.service' \
-        > /lib/systemd/system/gpsd.service
-
-    usermod -a -G tty gpsd
-    systemctl daemon-reload
-    systemctl enable gpsd
 }
 
 function help_message(){
