@@ -127,9 +127,6 @@ function configure_chrony(){
     rm -rfv -- chrony
 }
 
-function configure_gpsd(){
-}
-
 function help_message(){
 cat <<HELP
 
@@ -153,6 +150,6 @@ HELP
 
 install_required
 setup_serial
+compile_gpsd
 configure_chrony
-configure_gpsd
 help_message
