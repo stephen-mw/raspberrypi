@@ -43,7 +43,7 @@ function compile_gpsd(){
 
     cat >/etc/default/gpsd<<GPS_CONF
 DEVICES="/dev/ttyS0 /dev/pps0"
-GPSD_OPTIONS="-r -N -b"
+GPSD_OPTIONS="-r -n -N -b"
 GPS_CONF
 
     # We're not going to be using the socket so disable it
