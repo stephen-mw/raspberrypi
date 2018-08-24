@@ -27,7 +27,7 @@ function install_required(){
         pps-tools       \
         python-dev      \
         scons           \
-        sendmail 
+        sendmail
 }
 
 function compile_gpsd(){
@@ -43,7 +43,7 @@ function compile_gpsd(){
 
     cat >/etc/default/gpsd<<GPS_CONF
 DEVICES="/dev/ttyS0 /dev/pps0"
-GPSD_OPTIONS="-r -N"    
+GPSD_OPTIONS="-r -N -b"
 GPS_CONF
 
     # We're not going to be using the socket so disable it
@@ -63,7 +63,7 @@ function setup_serial(){
     # real-time clock highly accurate
     cp /boot/config.txt "/boot/config.txt_backup_$(date +%s)"
     cat >> /boot/config.txt<<BOOT
-    
+
 # Enable serial input
 enable_uart=1
 
@@ -101,7 +101,7 @@ function configure_chrony(){
     fi
 
     if ! id -u chrony; then
-        useradd --system -s /bin/false -d /tmp -G tty chrony 
+        useradd --system -s /bin/false -d /tmp -G tty chrony
     fi
 
     git clone https://git.tuxfamily.org/chrony/chrony.git
@@ -138,7 +138,7 @@ You must reboot before your system will work!
 To test the PPS pin:
 
     $ ppstest /dev/pps0
-    
+
 To test your GPS lock:
 
     $ cgps
