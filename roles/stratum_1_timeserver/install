@@ -25,7 +25,8 @@ function install_required(){
         gpsd            \
         gpsd-clients    \
         libcap-dev      \
-        pps-tools
+        pps-tools       \
+        sendmail 
 }
 
 function setup_serial(){
