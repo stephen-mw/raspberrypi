@@ -1,4 +1,5 @@
 [Unit]
+After=gpsd.service
 Description=Chrony Time Daemon
 
 [Service]
@@ -6,7 +7,6 @@ User=root
 ExecStart=/usr/local/sbin/chronyd -d -m -s -r
 KillMode=process
 Restart=on-failure
-After=gpsd.service
 
 [Install]
 WantedBy=multi-user.target
