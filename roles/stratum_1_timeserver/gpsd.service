@@ -3,7 +3,8 @@ Description=GPS daemon
 
 [Service]
 User=root
-ExecStart=/usr/sbin/gpsd -n -N /dev/ttyS0 /dev/pps0
+EnvironmentFile=/etc/default/gpsd
+ExecStart=/usr/local/sbin/gpsd $GPSD_OPTIONS $OPTIONS $DEVICES
 KillMode=process
 Restart=on-failure
 

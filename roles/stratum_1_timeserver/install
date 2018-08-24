@@ -22,11 +22,30 @@ function install_required(){
         build-essential \
         curl            \
         git             \
-        gpsd            \
         gpsd-clients    \
         libcap-dev      \
         pps-tools       \
         sendmail 
+}
+
+function compile_gpsd(){
+    # You should have a version of gpsd 3.17 or higher
+    apt install -y scons chrpath python-dev
+
+    pushd /usr/local/src
+    git clone https://git.savannah.gnu.org/git/gpsd.git
+    pushd gpsd
+    scons && scons testregress && sudo scons udev-install
+
+    cat >/etc/default/gpsd<<GPS_CONF
+DEVICES="/dev/ttyS0 /dev/pps0"
+GPSD_OPTIONS="-r -N"    
+GPS_CONF
+
+    # We're not going to be using the socket so disable it
+    systemctl stop gpsd.socket
+    systemctl disable gpsd.socket
+    test -f /lib/systemd/system/gpsd.socket && rm -fv -- /lib/systemd/system/gpsd.socket
 }
 
 function setup_serial(){
@@ -87,7 +106,7 @@ function configure_chrony(){
     curl -fs 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/chrony.conf' \
         > /etc/chrony.conf
     curl -fs 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/chrony.service' \
-        > /etc/systemd/system/chrony.service
+        > /lib/systemd/system/chrony.service
 
     mkdir /var/log/chrony || true
     chown -Rv chrony:chrony /var/log/chrony /var/lib/chrony
@@ -107,7 +126,7 @@ function configure_gpsd(){
     test -f /etc/init.d/gpsd && rm -rfv /etc/init.d/gpsd
 
     curl -fs 'https://raw.githubusercontent.com/stephen-mw/raspberrypi/master/roles/stratum_1_timeserver/gpsd.service' \
-        > /etc/systemd/system/gpsd.service
+        > /lib/systemd/system/gpsd.service
 
     usermod -a -G tty gpsd
     systemctl daemon-reload
