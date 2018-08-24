@@ -96,10 +96,10 @@ function setup_ssh_keys(){
     rm -rfv -- *\.pub
 
     echo 'Generating a new SSH key. Can take a minute or more...'
-    yes y | ssh-keygen -t rsa -b 4096 -f ssh_host_rsa_key -N ''
-    ssh-keygen -y -f ssh_host_rsa_key >> ssh_host_rsa_pub
+    echo y | ssh-keygen -t rsa -b 4096 -f ssh_host_rsa_key -N ''
+    ssh-keygen -y -f ssh_host_rsa_key > ssh_host_rsa_pub
 
-    systemctl sshd restart
+    systemctl restart sshd
 }
 
 function setup_system(){
