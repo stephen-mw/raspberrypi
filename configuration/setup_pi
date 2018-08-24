@@ -111,8 +111,8 @@ function setup_system(){
     # Turn off password authentication 
     sed -i 's/#   PasswordAuthentication yes/    PasswordAuthentication no/g' /etc/ssh/ssh_config
 
-    # Set the root user's bash functions similar to other users
-    cp /etc/skel/\.* /root/
+    # Make root a normal login user
+    cp -r /etc/skel /root
 
     # Put your custom functions here
     cat >/etc/profile.d/custom.sh<<CUSTOM
