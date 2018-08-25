@@ -1,5 +1,6 @@
 [Unit]
-After=gpsd.service
+After=network.target
+Conflicts=systemd-timesyncd.service openntpd.service
 Description=Chrony Time Daemon
 
 [Service]
