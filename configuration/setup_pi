@@ -17,6 +17,16 @@ export NEW_USER="smw"
 # My github user. Will pull these public keys
 export GITHUB_USER="stephen-mw"
 
+function setup_ramfs(){
+    # Improve the life of the SD by limiting the /logs and /tmp directory to
+    # a ramfs
+    for dir in /var/log /tmp; do
+        if ! grep -qP "tmpfs\s+${dir}" /etc/fstab; then
+            echo -e "tmpfs\t${dir}\ttmpfs\tdefaults,noatime,nosuid,mode=0774,size=100m\t0 0\n" >> /etc/fstab
+        fi
+    done
+}
+
 function setup_locale(){
     # Set the wifi
     echo 'country=US' >> /etc/wpa_supplicant/wpa_supplicant.conf
@@ -143,6 +153,7 @@ export HISTIGNORE="&:cd:fg:bg:pwd:pd:po:pushd:popd:dirs:ls:jobs:top"
 CUSTOM
 }
 
+setup_ramfs
 setup_locale
 install_packages
 setup_user
