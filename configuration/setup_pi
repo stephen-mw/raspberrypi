@@ -53,13 +53,14 @@ function install_packages(){
     apt install -y    \
         curl          \
         git           \
-        rpi-update    \
-        screen        \
-        ssh-import-id \
-        wget          \
         ntp           \
         rng-tools     \
+        rpi-update    \
+        rsyslog       \
+        screen        \
+        ssh-import-id \
         vim
+        wget          \
 
     rpi-update
 }
@@ -113,11 +114,14 @@ function setup_ssh_keys(){
 }
 
 function setup_system(){
+    # Log everything to the rsyslog server
+    echo '*.*  @cato:514' > '/etc/rsyslog.d/custom.conf'
+    systemctl restart rsyslog
+
     # SSH isn't enabled by default?
     systemctl enable ssh
     systemctl start ssh
 
-    
     # Turn off password authentication 
     sed -i 's/#   PasswordAuthentication yes/    PasswordAuthentication no/g' /etc/ssh/ssh_config
 
