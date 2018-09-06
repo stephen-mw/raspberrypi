@@ -1,6 +1,6 @@
 [Unit]
 Description=GPS daemon
-After=chrony.service
+Requires=dev-ttyS0.device
 
 [Service]
 User=root

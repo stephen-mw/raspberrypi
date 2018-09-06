@@ -1,6 +1,7 @@
 [Unit]
 Conflicts=systemd-timesyncd.service openntpd.service
 Description=Chrony Time Daemon
+After=gpsd.service
 
 [Service]
 User=root
