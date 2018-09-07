@@ -62,6 +62,7 @@ function setup_serial(){
     # The PPS (pulse-per-second) module on the GPS chip helps the RPI keep the
     # real-time clock highly accurate
     cp /boot/config.txt "/boot/config.txt_backup_$(date +%s)"
+
     cat >> /boot/config.txt<<BOOT
 
 # Enable serial input
@@ -70,6 +71,10 @@ enable_uart=1
 # Set the PPS GPIO pin for the kernel
 dtoverlay=pps-gpio,gpiopin=${PPS_GPIO}
 BOOT
+
+    # Disable the serial console, which holds the device open preventing a
+    # clean start of gpsd
+    sed -e 's/ console=ttyAMA0,115200//g' -i /boot/cmdline.txt
 
     # Keep the serial process from resetting permissions
     systemctl stop serial-getty@ttyS0.service    || true
