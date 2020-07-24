@@ -32,8 +32,26 @@ function setup_locale(){
     echo 'country=US' >> /etc/wpa_supplicant/wpa_supplicant.conf
 
     # Set language to EN
-    echo 'LANG=en_US.UTF-8' > /etc/default/locale
+    cat >> /etc/default/locale <<LANG
+LANG="en_US.UTF-8"
+LANGUAGE="en_US"
+LC_CTYPE="en_US.UTF-8"
+LC_NUMERIC="en_US.UTF-8"
+LC_TIME="en_US.UTF-8"
+LC_COLLATE="en_US.UTF-8"
+LC_MONETARY="en_US.UTF-8"
+LC_MESSAGES="en_US.UTF-8"
+LC_PAPER="en_US.UTF-8"
+LC_NAME="en_US.UTF-8"
+LC_ADDRESS="en_US.UTF-8"
+LC_TELEPHONE="en_US.UTF-8"
+LC_MEASUREMENT="en_US.UTF-8"
+LC_IDENTIFICATION="en_US.UTF-8"
+LC_ALL=
+LANG
 
+    localectl status
+    
     # Set the keyboard to US
     cat > /etc/default/keyboard<<KEYBOARD
 XKBMODEL="pc105"
