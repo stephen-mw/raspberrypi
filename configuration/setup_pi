@@ -59,8 +59,8 @@ function install_packages(){
         rsyslog       \
         screen        \
         ssh-import-id \
-        vim
-        wget          \
+        vim           \
+        wget
 
     rpi-update
 }
