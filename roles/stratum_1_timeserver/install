@@ -18,6 +18,7 @@ function install_required(){
 
     apt install -y      \
         asciidoctor     \
+        bison           \
         build-essential \
         chrpath         \
         curl            \
