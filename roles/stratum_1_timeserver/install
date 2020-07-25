@@ -73,6 +73,9 @@ enable_uart=1
 dtoverlay=pps-gpio,gpiopin=${PPS_GPIO}
 BOOT
 
+    # Use this module at boot time
+    echo 'pps-gpio' >> /etc/modules
+
     # Disable the serial console, which holds the device open preventing a
     # clean start of gpsd
     sed -e 's/ console=ttyAMA0,115200//g' -i /boot/cmdline.txt
