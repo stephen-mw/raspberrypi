@@ -158,8 +158,50 @@ Good luck!
 HELP
 }
 
+function setup_rtc() {
+    # Setup the real time clock. This is optional
+    apt get -y remove fake-hwclock
+    update-rc.d -f fake-hwclock remove
+    systemctl disable fake-hwclock
+
+    echo 'dtoverlay=i2c-rtc,ds3231' >> /boot/config.txt
+    echo 'dtparam=i2c_arm=on' >> /boot/config.txt
+    echo 'i2c-dev' >> /etc/modules
+    echo 'rtc-ds1307' >> /etc/modules
+
+    patch -u -b /lib/udev/hwclock-set<<'PATCH'
+@@ -4,9 +4,9 @@
+
+ dev=$1
+
+-if [ -e /run/systemd/system ] ; then
+-    exit 0
+-fi
++#if [ -e /run/systemd/system ] ; then
++#    exit 0
++#fi
+
+ if [ -e /run/udev/hwclock-set ]; then
+     exit 0
+@@ -26,10 +26,10 @@
+ fi
+
+ if [ yes = "$BADYEAR" ] ; then
+-    /sbin/hwclock --rtc=$dev --systz --badyear
++#    /sbin/hwclock --rtc=$dev --systz --badyear
+     /sbin/hwclock --rtc=$dev --hctosys --badyear
+ else
+-    /sbin/hwclock --rtc=$dev --systz
++#    /sbin/hwclock --rtc=$dev --systz
+     /sbin/hwclock --rtc=$dev --hctosys
+ fi
+
+PATCH
+}
+
 install_required
 setup_serial
 compile_gpsd
 configure_chrony
 help_message
+setup_rtc
