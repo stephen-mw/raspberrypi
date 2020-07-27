@@ -163,6 +163,14 @@ export HISTIGNORE="&:cd:fg:bg:pwd:pd:po:pushd:popd:dirs:ls:jobs:top"
 CUSTOM
 }
 
+function setup_watchdog() {
+    # Restart the Pi if it becomes unavailable for 10 seconds
+    echo 'RuntimeWatchdogSec=10s' >> /etc/systemd/system.conf
+
+    systemctl daemon-reexec
+}
+
+setup_watchdog
 setup_ramfs
 setup_locale
 install_packages
