@@ -170,6 +170,27 @@ function setup_watchdog() {
     systemctl daemon-reexec
 }
 
+function final_echo() {
+    cat <<'FINAL'
+That's it! You're done. You may want to drop a file boot called ssh:
+
+    /boot/ssh
+
+which will enable ssh daemon. Also you can preseed the wifi by dropping a file
+in /boot/wpa_supplicant.conf:
+
+network={
+    ssid="<WIRELESS ID>"
+    psk="<WIRELESS PASSWORD>"
+}
+
+which will automatically have it login to your wifi network.
+
+Good luck!
+
+FINAL
+}
+
 setup_watchdog
 setup_ramfs
 setup_locale
@@ -178,3 +199,4 @@ setup_user
 setup_system
 setup_ssh_keys
 setup_vim
+final_echo
