@@ -160,7 +160,7 @@ HELP
 
 function setup_rtc() {
     # Setup the real time clock. This is optional
-    apt get -y remove fake-hwclock
+    apt -y remove fake-hwclock
     update-rc.d -f fake-hwclock remove
     systemctl disable fake-hwclock
 
