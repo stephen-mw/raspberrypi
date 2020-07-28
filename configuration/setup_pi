@@ -33,7 +33,7 @@ function setup_locale(){
     export LC_ALL=en_US.UTF-8
 
     cat > /etc/default/locale<<LOCALE
-LANG=${LANGE}
+LANG=${LANG}
 LC_MESSAGES=${LC_MESSAGES}
 LOCALE
 
