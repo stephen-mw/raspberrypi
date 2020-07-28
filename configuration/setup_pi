@@ -57,8 +57,6 @@ KEYBOARD
 function install_packages(){
     echo "Acquire::http::Proxy \"${MIRROR}\";" > /etc/apt/apt.conf.d/01proxy
 
-    rpi-update
-
     apt update -y
     apt upgrade -y
 
@@ -74,6 +72,7 @@ function install_packages(){
         vim           \
         wget
 
+    rpi-update
 }
 
 function setup_vim(){
