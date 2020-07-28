@@ -203,5 +203,5 @@ install_required
 setup_serial
 compile_gpsd
 configure_chrony
-help_message
 setup_rtc
+help_message
