@@ -31,9 +31,11 @@ function setup_locale(){
     # Set language to EN
     export LANG=en_US.UTF-8
     export LC_ALL=en_US.UTF-8
+    export LC_MESSAGES=en_US.UTF-8
 
     cat > /etc/default/locale<<LOCALE
 LANG=${LANG}
+LC_ALL=${LC_ALL}
 LC_MESSAGES=${LC_MESSAGES}
 LOCALE
 
