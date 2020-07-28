@@ -19,25 +19,27 @@ export GITHUB_USER="stephen-mw"
 
 function setup_ramfs(){
     # Improve the life of the SD by limiting the /logs and /tmp directory to
-    # a ramfs
+    # a ramfs. In the future I'll probably just ship off logs with rsyslog.
     for dir in /var/log /tmp; do
         if ! grep -qP "tmpfs\s+${dir}" /etc/fstab; then
-            echo -e "tmpfs\t${dir}\ttmpfs\tdefaults,noatime,nosuid,mode=0774,size=100m\t0 0\n" >> /etc/fstab
+            echo -e "tmpfs\t${dir}\ttmpfs\tdefaults,noatime,nosuid,mode=0774,size=25m\t0 0\n" >> /etc/fstab
         fi
     done
 }
 
 function setup_locale(){
-    # Set the wifi
-    echo 'country=US' >> /etc/wpa_supplicant/wpa_supplicant.conf
-
     # Set language to EN
-    export LANGUAGE=en_US.UTF-8
     export LANG=en_US.UTF-8
     export LC_ALL=en_US.UTF-8
-    locale-gen en_US.UTF-8
-    dpkg-reconfigure locales
 
+    cat > /etc/default/locale<<LOCALE
+LANG=${LANGE}
+LC_MESSAGES=${LC_MESSAGES}
+LOCALE
+
+    # Generate locales
+    echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen
+    locale-gen
     localectl status
     
     # Set the keyboard to US
