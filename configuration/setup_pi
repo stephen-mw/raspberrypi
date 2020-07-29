@@ -46,7 +46,7 @@ LOCALE
     echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen
     locale-gen
     localectl status
-    
+
     # Set the keyboard to US
     cat > /etc/default/keyboard<<KEYBOARD
 XKBMODEL="pc105"
@@ -76,6 +76,37 @@ function install_packages(){
         wget
 
     rpi-update
+}
+
+function setup_unattended_upgrades() {
+    # Unattended upgrades will keep the pi up-to-date, and this function also
+    # will make the pi reboot once a month.
+    apt install -y \
+        apt-listchanges        \
+        bsd-mailx              \
+        unattended-upgrades
+
+    # After installing updates, send an email and reboot if necessary
+    cat >> /etc/apt/apt.conf.d/50unattended-upgrades<<UPGRADES
+Unattended-Upgrade::Mail "contact.stephen.wood@gmail.com";
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+UPGRADES
+
+    # Enable all packages and periodically clean up
+    cat > /etc/apt/apt.conf.d/20auto-upgrades<<UPGRADES
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Download-Upgradeable-Packages "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::Verbose "1";
+APT::Periodic::AutocleanInterval "7";
+UPGRADES
+
+    # Dry run to test that everything is working
+    unattended-upgrade -d -v --dry-run
+
+    # Enable the service
+    dpkg-reconfigure --priority=low unattended-upgrades -fnoninteractive
 }
 
 function setup_vim(){
@@ -135,7 +166,7 @@ function setup_system(){
     systemctl enable ssh
     systemctl start ssh
 
-    # Turn off password authentication 
+    # Turn off password authentication
     sed -i 's/#   PasswordAuthentication yes/    PasswordAuthentication no/g' /etc/ssh/ssh_config
 
     # Make root a normal login user
@@ -209,7 +240,7 @@ export PATH="$PYENV_ROOT/bin:$PATH"
 
 if [[ -d "${PYENV_ROOT}" ]]; then
     rm -rfv -- "${PYENV_ROOT}"
-fi 
+fi
 
 git clone https://github.com/pyenv/pyenv.git ${PYENV_ROOT}
 
@@ -266,6 +297,7 @@ setup_watchdog
 setup_ramfs
 setup_locale
 install_packages
+setup_unattended_upgrades
 setup_user
 setup_system
 setup_ssh_keys
