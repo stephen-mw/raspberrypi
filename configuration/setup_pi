@@ -25,9 +25,17 @@ function setup_ramfs(){
             echo -e "tmpfs\t${dir}\ttmpfs\tdefaults,noatime,nosuid,mode=0774,size=25m\t0 0\n" >> /etc/fstab
         fi
     done
+
+    chmod 1777 /tmp
 }
 
 function setup_locale(){
+    # Generate locales for US UTF-8
+    sed -i 's/^en_GB.UTF-8 UTF-8/# en_GB.UTF-8 UTF-8/' /etc/locale.gen
+    sed -i 's/^# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+
+    locale-gen
+
     # Set language to EN
     export LANG=en_US.UTF-8
     export LC_ALL=en_US.UTF-8
@@ -38,10 +46,6 @@ LANG=${LANG}
 LC_ALL=${LC_ALL}
 LC_MESSAGES=${LC_MESSAGES}
 LOCALE
-
-    # Generate locales
-    echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen
-    locale-gen
 
     localectl status
 
