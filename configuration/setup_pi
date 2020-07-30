@@ -281,6 +281,10 @@ That's it! You're done. You may want to drop a file boot called ssh:
 which will enable ssh daemon. Also you can preseed the wifi by dropping a file
 in /boot/wpa_supplicant.conf:
 
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=US
+
 network={
     ssid="<WIRELESS ID>"
     psk="<WIRELESS PASSWORD>"
