@@ -91,8 +91,9 @@ BOOT
         mv /etc/udev/rules.d/99-com.rules /etc/udev/rules.d/98-com.rules
     fi
     cat > /etc/udev/rules.d/99-gps.rules<<RULES
-KERNEL=="ttyS0",     GROUP="tty", MODE="0664", TAG+="systemd"
-KERNEL=="pps[0-9]*", GROUP="tty", MODE="0664", TAG+="systemd"
+SUBSYSTEM=="tty", GROUP="tty", MODE="0664"
+SUBSYSTEM=="pps", GROUP="tty", MODE="0664"
+SUBSYSTEM=="rtc", GROUP="tty", MODE="0664"
 RULES
 }
 

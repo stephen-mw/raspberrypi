@@ -5,7 +5,7 @@ After=gpsd.service
 
 [Service]
 User=root
-ExecStart=/usr/local/sbin/chronyd -d -m -s -r
+ExecStart=/usr/local/sbin/chronyd -d -m -r
 KillMode=process
 Restart=on-failure
 
