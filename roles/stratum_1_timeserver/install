@@ -14,7 +14,6 @@ export PPS_GPIO=18
 function install_required(){
     apt update -y
     apt upgrade -y
-    rpi-update
 
     apt install -y      \
         asciidoctor     \
