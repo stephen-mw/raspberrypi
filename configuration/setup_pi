@@ -28,9 +28,6 @@ function setup_ramfs(){
 }
 
 function setup_locale(){
-    # Set local time
-    timedatectl set-timezone 'America/Los_Angeles'
-
     # Set language to EN
     export LANG=en_US.UTF-8
     export LC_ALL=en_US.UTF-8
@@ -45,7 +42,11 @@ LOCALE
     # Generate locales
     echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen
     locale-gen
+
     localectl status
+
+    # Set local time
+    timedatectl set-timezone 'America/Los_Angeles'
 
     # Set the keyboard to US
     cat > /etc/default/keyboard<<KEYBOARD
