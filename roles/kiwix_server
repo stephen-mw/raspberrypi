@@ -30,7 +30,7 @@ WantedBy=multi-user.target
 SERVICE
 
     chmod 500 -R ${DEST}/*
-    chown -R kiwix:kiwix ${DEST}
+    chown -R root:kiwix/* ${DEST}
 
     systemd enable kiwix
 }
