@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Install the kiwix server on raspberry pi
+
+function install_kiwix() {
+    # Rather than compile, get the static binary
+    local DEST=/etc/kiwix
+    mkdir ${DEST} || true
+    pushd ${DEST}
+    curl -L 'https://download.kiwix.org/release/kiwix-tools/kiwix-tools_linux-armhf.tar.gz' | tar xzvf -
+    mv kiwix-tools_linux-armhf-*/* .
+    rm -rfv -- kiwix-tools_linux-armhf-*/
+    chmod -v +x *
+
+    useradd -M --system -s /bin/false kiwix
+
+    # Install systemd
+    cat > /etc/systemd/system/kiwix.service<<SERVICE
+[Unit]
+Description=Kiwixi Server
+
+[Service]
+User=kiwix
+ExecStart=bash -c '/etc/kiwix/kiwix-serve -p 8080 ${DEST}/library/*'
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+
+    chmod 500 -R ${DEST}/*
+    chown -R kiwix:kiwix ${DEST}
+
+    systemd enable kiwix
+}
+
+install_kiwix
