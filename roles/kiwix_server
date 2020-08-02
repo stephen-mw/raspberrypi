@@ -29,10 +29,24 @@ Restart=on-failure
 WantedBy=multi-user.target
 SERVICE
 
-    chmod 500 -R ${DEST}/*
+    chmod 550 -R ${DEST}/*
     chown -R root:kiwix/* ${DEST}
 
     systemd enable kiwix
+
+    cat <<FINAL
+
+All done! Simply add zim files to ${DEST}/library/ and restart the service.
+
+You can download packages from:
+
+    https://wiki.kiwix.org/wiki/Content_in_all_languages 
+
+Make sure the permissions are correct:
+
+    sudo chown root:kiwix ${DEST}/library/*
+    sudo chmod 440  ${DEST}/library/*
+FINAL
 }
 
 install_kiwix
