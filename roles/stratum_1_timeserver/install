@@ -104,11 +104,6 @@ BOOT
     systemctl disable serial-getty@ttyS0.service || true
     test -f /lib/systemd/system/serial-getty@.service && mv /lib/systemd/system/serial-getty@.service{,_backup}
 
-    # Setup the udev rules so that the devices are readable by gpsd. We need to
-    # add the systemd tag or else we can't properly wait for the devices.
-    if [[ -f "/etc/udev/rules.d/99-com.rules" ]]; then
-        mv /etc/udev/rules.d/99-com.rules /etc/udev/rules.d/98-com.rules
-    fi
     cat > /etc/udev/rules.d/99-gps.rules<<RULES
 SUBSYSTEM=="tty", GROUP="tty", MODE="0664"
 SUBSYSTEM=="pps", GROUP="tty", MODE="0664"
