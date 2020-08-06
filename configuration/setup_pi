@@ -146,6 +146,9 @@ function setup_user(){
     cat >/etc/sudoers.d/01${NEW_USER}<<SUDO
 ${NEW_USER} ALL=(ALL) NOPASSWD: ALL
 SUDO
+
+    # Give root the normal bash stuff
+    cp -r /etc/skel/. /root/
 }
 
 function setup_ssh_keys(){
@@ -173,9 +176,6 @@ function setup_system(){
 
     # Turn off password authentication
     sed -i 's/#   PasswordAuthentication yes/    PasswordAuthentication no/g' /etc/ssh/ssh_config
-
-    # Make root a normal login user
-    cp -r /etc/skel /root
 
     # Put your custom functions here
     cat >/etc/profile.d/custom.sh<<CUSTOM
