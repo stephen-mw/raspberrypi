@@ -67,6 +67,7 @@ function install_packages(){
     apt install -y    \
         curl          \
         git           \
+        i2c-tools     \
         ntp           \
         rng-tools     \
         rpi-update    \
@@ -158,6 +159,7 @@ function setup_ssh_keys(){
     echo y | ssh-keygen -t rsa -b 4096 -f ssh_host_rsa_key -N ''
     ssh-keygen -y -f ssh_host_rsa_key > ssh_host_rsa_pub
 
+    # Only allow smw to ssh
     systemctl restart sshd
 }
 
@@ -167,11 +169,15 @@ function setup_system(){
     systemctl restart rsyslog
 
     # SSH isn't enabled by default?
-    systemctl enable ssh
-    systemctl start ssh
 
-    # Turn off password authentication
-    sed -i 's/#   PasswordAuthentication yes/    PasswordAuthentication no/g' /etc/ssh/ssh_config
+    # Turn off password authentication and only allow ssh
+    cat > /etc/ssh/sshd_config<<SSH
+AllowUsers smw
+PasswordAuthentication no
+SSH
+
+    systemctl enable ssh
+    systemctl restart ssh
 
     # Put your custom functions here
     cat >/etc/profile.d/custom.sh<<CUSTOM
