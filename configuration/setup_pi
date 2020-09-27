@@ -77,7 +77,7 @@ function install_packages(){
         vim           \
         wget
 
-    rpi-update
+    yes | rpi-update
 }
 
 function setup_unattended_upgrades() {
