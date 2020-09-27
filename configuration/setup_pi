@@ -304,8 +304,11 @@ Good luck!
 FINAL
 }
 
+
+# Temporarily disabled. Not sure I like this feature.
+#setup_ramfs
+
 setup_watchdog
-setup_ramfs
 setup_locale
 install_packages
 setup_unattended_upgrades
