@@ -146,11 +146,11 @@ SUDO
 
     # Give root the normal bash stuff
     cp -r /etc/skel/. /root/
-}
 
-function setup_ssh_keys(){
+function setup_ssh(){
     # Make sure rng-tools is running
     systemctl start rng-tools
+
     pushd /etc/ssh/
     rm -rfv -- *_key
     rm -rfv -- *\.pub
@@ -159,25 +159,20 @@ function setup_ssh_keys(){
     echo y | ssh-keygen -t rsa -b 4096 -f ssh_host_rsa_key -N ''
     ssh-keygen -y -f ssh_host_rsa_key > ssh_host_rsa_pub
 
-    # Only allow smw to ssh
-    systemctl restart sshd
-}
-
-function setup_system(){
-    # Log everything to the rsyslog server
-    echo '*.*  @cato:514' > '/etc/rsyslog.d/custom.conf'
-    systemctl restart rsyslog
-
-    # SSH isn't enabled by default?
-
     # Turn off password authentication and only allow ssh
-    cat > /etc/ssh/sshd_config<<SSH
+    cat >> /etc/ssh/sshd_config<<SSH
 AllowUsers smw
 PasswordAuthentication no
 SSH
 
     systemctl enable ssh
     systemctl restart ssh
+}
+
+function setup_system(){
+    # Log everything to the rsyslog server
+    echo '*.*  @cato:514' > '/etc/rsyslog.d/custom.conf'
+    systemctl restart rsyslog
 
     # Put your custom functions here
     cat >/etc/profile.d/custom.sh<<CUSTOM
@@ -313,8 +308,8 @@ setup_locale
 install_packages
 setup_unattended_upgrades
 setup_user
+setup_ssh
 setup_system
-setup_ssh_keys
 setup_vim
 setup_python3
 final_echo
