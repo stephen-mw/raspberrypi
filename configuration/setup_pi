@@ -269,6 +269,9 @@ function setup_python3() {
     update-alternatives --install "$(which pip)" pip /usr/bin/pip2.7 2
 
     # Lastly, set the system python to our new version
+    # For now, skip this part.
+    return
+
     update-alternatives --set python /etc/pyenv/versions/${VERSION}/bin/python
     update-alternatives --set pip /etc/pyenv/versions/${VERSION}/bin/pip
 
