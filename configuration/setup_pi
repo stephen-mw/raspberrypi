@@ -92,7 +92,7 @@ LIST
         vim           \
         wget
 
-    yes | rpi-update
+    yes | rpi-update || true
 }
 
 function setup_unattended_upgrades() {
