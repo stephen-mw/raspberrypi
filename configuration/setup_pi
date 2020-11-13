@@ -61,6 +61,19 @@ KEYBOARD
 
 function install_packages(){
 
+    # Enable a custom local mirror
+    cat > /etc/apt/sources.list.d/raspi.list<<LIST
+deb https://cato.u1f602.com/mirror/archive.raspberrypi.org/debian/ buster main
+# Uncomment line below then 'apt-get update' to enable 'apt-get source'
+#deb-src https://cato.u1f602.com/mirror/archive.ubuntu.com/debian/ buster main
+LIST
+
+    cat > /etc/apt/sources.list<<LIST
+deb https://cato.u1f602.com/mirror/archive.raspbian.org/raspbian/ buster main contrib non-free rpi
+# Uncomment line below then 'apt-get update' to enable 'apt-get source'
+#deb-src https://cato.u1f602.com/mirror/archive.ubuntu.com/raspbian/ buster main contrib non-free rpi
+LIST
+
     apt update -y
     apt upgrade -y
 
