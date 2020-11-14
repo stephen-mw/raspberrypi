@@ -32,7 +32,7 @@ SERVICE
     chmod 550 -R ${DEST}/*
     chown -R root:kiwix ${DEST}/*
 
-    systemd enable kiwix
+    systemctl enable kiwix
 
     cat <<FINAL
 
