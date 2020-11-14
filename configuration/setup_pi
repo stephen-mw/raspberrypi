@@ -82,6 +82,7 @@ LIST
         git           \
         i2c-tools     \
         ntp           \
+        python-pip    \
         python3       \
         python3-pip   \
         rng-tools     \
