@@ -105,7 +105,7 @@ BOOT
     test -f /lib/systemd/system/serial-getty@.service && mv /lib/systemd/system/serial-getty@.service{,_backup}
 
     cat > /etc/udev/rules.d/99-gps.rules<<RULES
-SUBSYSTEM=="tty", GROUP="tty", MODE="0664"
+SUBSYSTEM=="tty", GROUP="tty", MODE="0777"
 SUBSYSTEM=="pps", GROUP="tty", MODE="0664"
 SUBSYSTEM=="rtc", GROUP="tty", MODE="0664"
 RULES
