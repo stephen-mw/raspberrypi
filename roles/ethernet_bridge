@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -exuo pipefail
+
+# Setup a raspberry pi as an ethernet bridge. E.g., you connect your pi to a
+# wifi network and anything connected to its ethernet will share that
+# connection.
+
+# Thank you Pathead for the instructions:
+# https://www.raspberrypi.org/forums/viewtopic.php?t=132674
+
+apt update
+apt install -y dnsmasq
+
+cat > /etc/network/interfaces.d/eth0.conf <<ETH0
+allow-hotplug eth0
+iface eth0 inet static
+    address 172.24.1.1
+    netmask 255.255.255.0
+    network 172.24.1.0
+    broadcast 172.24.1.255
+ETH0
+
+cat > /etc/dnsmasq.conf <<DNSMASQ
+interface=eth0
+listen-address=172.24.1.1
+bind-interfaces
+server=10.10.10.1
+domain-needed
+bogus-priv
+dhcp-range=172.24.1.50,172.24.1.150,12h
+DNSMASQ
+
+echo 'net.ipv4.ip_forward=1' > /etc/sysctl.d/99-eth0_bridge.conf
+sysctl -p
+
+# You'll need to switch back to legacy iptables
+update-alternatives --set iptables /usr/sbin/iptables-legacy
+
+echo "If you get errors here about a missing module, you need to reboot and run again."
+iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
+iptables-save > /etc/iptables.ipv4.nat
+echo 'iptables-save > /etc/iptables.ipv4.nat' >> /lib/dhcpcd/dhcpcd-hooks/70-ipv4-nat
