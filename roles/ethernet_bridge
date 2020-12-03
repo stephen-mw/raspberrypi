@@ -39,4 +39,4 @@ update-alternatives --set iptables /usr/sbin/iptables-legacy
 echo "If you get errors here about a missing module, you need to reboot and run again."
 iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
 iptables-save > /etc/iptables.ipv4.nat
-echo 'iptables-save > /etc/iptables.ipv4.nat' >> /lib/dhcpcd/dhcpcd-hooks/70-ipv4-nat
+echo 'iptables-restore < /etc/iptables.ipv4.nat' >> /lib/dhcpcd/dhcpcd-hooks/70-ipv4-nat
