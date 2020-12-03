@@ -11,7 +11,7 @@ set -exuo pipefail
 apt update
 apt install -y dnsmasq
 
-cat > /etc/network/interfaces.d/eth0.conf <<ETH0
+cat > /etc/network/interfaces.d/ifcfg-eth0 <<ETH0
 allow-hotplug eth0
 iface eth0 inet static
     address 172.24.1.1
@@ -29,6 +29,8 @@ domain-needed
 bogus-priv
 dhcp-range=172.24.1.50,172.24.1.150,12h
 DNSMASQ
+
+sudo systemctl enable dnsmasq
 
 echo 'net.ipv4.ip_forward=1' > /etc/sysctl.d/99-eth0_bridge.conf
 sysctl -p
