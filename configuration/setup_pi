@@ -173,8 +173,8 @@ function setup_ssh(){
     rm -rfv -- *\.pub
 
     echo 'Generating a new SSH key. Can take a minute or more...'
-    echo y | ssh-keygen -t rsa -b 4096 -f ssh_host_rsa_key -N ''
-    ssh-keygen -y -f ssh_host_rsa_key > ssh_host_rsa_pub
+    echo y | ssh-keygen -t ed25519 -f ssh_host_ed25519_key -N ''
+    ssh-keygen -y -f ssh_host_ed25519_key > ssh_host_ed25519_pub
 
     # Turn off password authentication and only allow ssh
     cat >> /etc/ssh/sshd_config<<SSH
