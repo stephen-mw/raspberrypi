@@ -158,6 +158,9 @@ function setup_user() {
     test -f /etc/sudoers.d/010_pi-nopasswd && rm -fv /etc/sudoers.d/010_pi-nopasswd
     cat >/etc/sudoers.d/01${NEW_USER}<<SUDO
 ${NEW_USER} ALL=(ALL) NOPASSWD: ALL
+
+# Allow sudo to keep using agent forwarding
+Defaults    env_keep+=SSH_AUTH_SOCK
 SUDO
 
     # Give root the normal bash stuff
