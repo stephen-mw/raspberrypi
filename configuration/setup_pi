@@ -89,6 +89,7 @@ LIST
         rpi-update    \
         rsyslog       \
         screen        \
+        software-properties-common \
         ssh-import-id \
         vim           \
         wget
