@@ -47,7 +47,7 @@ LOCALE
     localectl status
 
     # Set local time
-    timedatectl set-timezone 'America/Los_Angeles'
+    timedatectl set-timezone 'America/Boise'
 
     # Set the keyboard to US
     cat > /etc/default/keyboard<<KEYBOARD
