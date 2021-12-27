@@ -28,8 +28,13 @@ function setup_ramfs(){
 
 function setup_locale(){
     # Generate locales for US UTF-8
-    sed -i 's/^en_GB.UTF-8 UTF-8/# en_GB.UTF-8 UTF-8/' /etc/locale.gen
-    sed -i 's/^# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+    cat > /etc/environment<<ENV
+LANG=en_US.utf-8
+LC_ALL=en_US.utf-8
+ENV
+
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+    echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
     locale-gen
 
@@ -62,16 +67,28 @@ KEYBOARD
 function install_packages(){
 
     # Enable a custom local mirror
-    cat > /etc/apt/sources.list.d/raspi.list<<LIST
-deb http://cato.local/mirror/archive.raspberrypi.org/debian/ buster main
-# Uncomment line below then 'apt-get update' to enable 'apt-get source'
-#deb-src http://cato.local/mirror/archive.ubuntu.com/debian/ buster main
-LIST
+    rm /etc/apt/sources.list.d/raspi.list
+    mv /etc/apt/sources.list /etc/apt/sources.list.backup
 
-    cat > /etc/apt/sources.list<<LIST
-deb http://cato.local/mirror/archive.raspbian.org/raspbian/ buster main contrib non-free rpi
-# Uncomment line below then 'apt-get update' to enable 'apt-get source'
-#deb-src http://cato.local/mirror/archive.ubuntu.com/raspbian/ buster main contrib non-free rpi
+    # Temporarily disabled
+    cat >> /etc/apt/sources.list<<LIST
+# Raspberry PI OS Buster repository
+#deb http://cato.local/mirror/archive.raspberrypi.org/debian/ buster main
+
+# Raspberry PI OS Bullseye repository
+#deb http://cato.local/mirror/archive.raspberrypi.org/debian/ bullseye main
+
+# Bullseye https://www.debian.org/releases/bullseye/arm64/release-notes/ch-upgrading.en.html
+#deb http://cato.local/mirror/deb.debian.org/debian/ bullseye main contrib non-free
+
+# Bullseye Security https://www.debian.org/releases/bullseye/arm64/release-notes/ch-information.en.html#security-archive
+#deb http://cato.local/mirror/deb.debian.org/debian-security bullseye-security main contrib non-free
+
+# Bullseye Updates https://wiki.debian.org/DebianBullseye#FAQ
+#deb http://cato.local/mirror/deb.debian.org/debian bullseye-updates main contrib non-free
+
+# Bullseye Backports  https://backports.debian.org/
+#deb http://cato.local/mirror/deb.debian.org/debian/ bullseye-backports main contrib non-free
 LIST
 
     apt update -y
