@@ -215,7 +215,8 @@ PATCH
 
     # Even though we have an RTC, we don't want it to set the system time on
     # shutdown because chrony is doing that.
-    echo 'HWCLOCKACCESS=no' >> '/etc/default/hwclock'
+    # TODO: this is temporarily disabled because chrony can't set the hwclock
+    #echo 'HWCLOCKACCESS=no' >> '/etc/default/hwclock'
 }
 
 install_required
