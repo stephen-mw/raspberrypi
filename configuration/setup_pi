@@ -92,6 +92,7 @@ LIST
         software-properties-common \
         ssh-import-id \
         vim           \
+        watchdog      \
         wget
 
     yes | rpi-update || true
@@ -225,10 +226,17 @@ CUSTOM
 }
 
 function setup_watchdog() {
-    # Restart the Pi if it becomes unavailable for 10 seconds
-    echo 'RuntimeWatchdogSec=10s' >> /etc/systemd/system.conf
+    echo 'dtparam=watchdog=on' >> /boot/config.txt
 
-    systemctl daemon-reexec
+    cat >> /etc/watchdog.conf<<WATCHDOG
+watchdog-device = /dev/watchdog
+watchdog-timeout = 15
+max-load-1 = 24
+interface = wlan0
+WATCHDOG
+
+    systemctl enable watchdog
+    systemctl start watchdog
 }
 
 function setup_python3() {
