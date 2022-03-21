@@ -336,11 +336,11 @@ FINAL
 
 setup_locale
 install_packages
+setup_user
+setup_ssh
 setup_system
 setup_watchdog
 setup_unattended_upgrades
-setup_user
-setup_ssh
 setup_vim
 # setup_python3
 final_echo
