@@ -95,7 +95,8 @@ LIST
         watchdog      \
         wget
 
-    yes | rpi-update || true
+    # For now stay on the stable update
+    #yes | rpi-update || true
 }
 
 function setup_unattended_upgrades() {
