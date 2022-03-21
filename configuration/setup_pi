@@ -334,10 +334,10 @@ FINAL
 # Temporarily disabled. Not sure I like this feature.
 #setup_ramfs
 
-setup_watchdog
 setup_locale
 install_packages
 setup_system
+setup_watchdog
 setup_unattended_upgrades
 setup_user
 setup_ssh
