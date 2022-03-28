@@ -71,7 +71,7 @@ LIST
     cat > /etc/apt/sources.list<<LIST
 deb http://cato.local/mirror/archive.raspbian.org/raspbian/ buster main contrib non-free rpi
 # Uncomment line below then 'apt-get update' to enable 'apt-get source'
-#deb-src http://cato.local/mirror/archive.ubuntu.com/raspbian/ buster main contrib non-free rpi
+#deb-src http://cato.local/mirror/archive.raspbian.org/raspbian/ buster main contrib non-free rpi
 LIST
 
     apt update -y
