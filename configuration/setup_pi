@@ -171,8 +171,11 @@ SUDO
 }
 
 function setup_ssh(){
-    # Make sure rng-tools is running
-    systemctl start rng-tools
+
+    echo "Enabling hardware RNG..."
+    sed -i 's|#HRNGDEVICE=/dev/hwrng|HRNGDEVICE=/dev/hwrng|' \
+        /etc/default/rng-tools
+    systemctl restart rng-tools
 
     pushd /etc/ssh/
     rm -rfv -- *_key
