@@ -62,17 +62,14 @@ KEYBOARD
 function install_packages(){
 
     # Enable a custom local mirror
-    cat > /etc/apt/sources.list.d/raspi.list<<LIST
-deb http://cato.local/mirror/archive.raspberrypi.org/debian/ buster main
-# Uncomment line below then 'apt-get update' to enable 'apt-get source'
-#deb-src http://cato.local/mirror/archive.ubuntu.com/debian/ buster main
+    cat > /etc/apt/sources.listd/raspi.list<<LIST
+deb http://cato.local/mirror/archive.raspberrypi.org/debian/ bullseye main
+deb http://cato.local/mirror/archive.raspbian.org/raspbian/ bullseye main contrib non-free rpi
+#deb-src http://cato.local/mirror/archive.ubuntu.com/debian/ bullseye main
+#deb-src http://cato.local/mirror/archive.raspbian.org/raspbian/ bullseye main contrib non-free rpi
 LIST
 
-    cat > /etc/apt/sources.list<<LIST
-deb http://cato.local/mirror/archive.raspbian.org/raspbian/ buster main contrib non-free rpi
-# Uncomment line below then 'apt-get update' to enable 'apt-get source'
-#deb-src http://cato.local/mirror/archive.raspbian.org/raspbian/ buster main contrib non-free rpi
-LIST
+    rm /etc/apt/sources.list.d/raspi.list
 
     apt update -y
     apt upgrade -y
@@ -102,9 +99,9 @@ LIST
 function setup_unattended_upgrades() {
     # Unattended upgrades will keep the pi up-to-date, and this function also
     # will make the pi reboot once a month.
-    apt install -y \
-        apt-listchanges        \
-        bsd-mailx              \
+    apt install -y      \
+        apt-listchanges \
+        bsd-mailx       \
         unattended-upgrades
 
     # After installing updates, send an email and reboot if necessary
