@@ -63,10 +63,10 @@ function install_packages(){
 
     # Enable a custom local mirror
     cat > /etc/apt/sources.listd/raspi.list<<LIST
-deb http://cato.local/mirror/archive.raspberrypi.org/debian/ bullseye main
-deb http://cato.local/mirror/archive.raspbian.org/raspbian/ bullseye main contrib non-free rpi
-#deb-src http://cato.local/mirror/archive.ubuntu.com/debian/ bullseye main
-#deb-src http://cato.local/mirror/archive.raspbian.org/raspbian/ bullseye main contrib non-free rpi
+deb https://mirror.u1f602.com/archive.raspberrypi.org/debian/ bullseye main
+deb http://mirror.u1f602.com/archive.raspbian.org/raspbian/ bullseye main contrib non-free rpi
+#deb-src https://mirror.u1f602.com/archive.ubuntu.com/debian/ bullseye main
+#deb-src https://mirror.u1f602.com/archive.raspbian.org/raspbian/ bullseye main contrib non-free rpi
 LIST
 
     rm /etc/apt/sources.list.d/raspi.list
@@ -171,7 +171,7 @@ function setup_ssh(){
 
     echo "Enabling hardware RNG..."
     sed -i 's|#HRNGDEVICE=/dev/hwrng|HRNGDEVICE=/dev/hwrng|' \
-        /etc/default/rng-tools
+        /etc/default/rng-tools-debian
     systemctl restart rng-tools
 
     pushd /etc/ssh/
