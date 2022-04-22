@@ -61,25 +61,34 @@ KEYBOARD
 
 function install_packages(){
 
+    apt-key adv --keyserver keyserver.ubuntu.com --recv 648ACFD622F3D138
+
     # Enable a custom local mirror
-    cat > /etc/apt/sources.listd/raspi.list<<LIST
-deb https://mirror.u1f602.com/archive.raspberrypi.org/debian/ bullseye main
-deb http://mirror.u1f602.com/archive.raspbian.org/raspbian/ bullseye main contrib non-free rpi
-#deb-src https://mirror.u1f602.com/archive.ubuntu.com/debian/ bullseye main
-#deb-src https://mirror.u1f602.com/archive.raspbian.org/raspbian/ bullseye main contrib non-free rpi
+    cat > /etc/apt/sources.list<<LIST
+# Old mirrors
+#deb http://raspbian.raspberrypi.org/raspbian/ bullseye main contrib non-free rpi
+#deb-src http://raspbian.raspberrypi.org/raspbian/ bullseye main contrib non-free rpi
+#deb http://archive.raspberrypi.org/debian/ bullseye main
+#deb-src http://archive.raspberrypi.org/debian/ bullseye main
+
+# Local mirrors
+deb https://mirror.u1f602.com/debian/ bullseye main
+deb https://mirror.u1f602.com/raspbian/ bullseye main contrib non-free rpi
+#deb-src https://mirror.u1f602.com/debian/ bullseye main
+#deb-src https://mirror.u1f602.com/raspbian/ bullseye main contrib non-free rpi
 LIST
 
-    rm /etc/apt/sources.list.d/raspi.list
+    rm -r /etc/apt/sources.list.d/raspi.list || true
 
     apt update -y
     apt upgrade -y
 
     apt install -y    \
         curl          \
+        file          \
         git           \
         i2c-tools     \
         ntp           \
-        python-pip    \
         python3       \
         python3-pip   \
         rng-tools     \
@@ -335,7 +344,7 @@ FINAL
 # Temporarily disabled. Not sure I like this feature.
 #setup_ramfs
 
-setup_locale
+#setup_locale  # Probably not needed anymore
 install_packages
 setup_user
 setup_ssh
@@ -343,6 +352,5 @@ setup_system
 setup_watchdog
 setup_unattended_upgrades
 setup_vim
-# setup_python3
 final_echo
 
