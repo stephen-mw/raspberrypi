@@ -1,0 +1,109 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Update apt sources
+      copy:
+        dest: /etc/apt/sources.list
+        content: |
+          # Old mirrors
+          #deb http://raspbian.raspberrypi.org/raspbian/ bullseye main contrib non-free rpi
+          #deb-src http://raspbian.raspberrypi.org/raspbian/ bullseye main contrib non-free rpi
+          #deb http://archive.raspberrypi.org/debian/ bullseye main
+          #deb-src http://archive.raspberrypi.org/debian/ bullseye main
+
+          # Local mirrors
+          deb https://mirror.u1f602.com/debian/ bullseye main
+          deb https://mirror.u1f602.com/raspbian/ bullseye main contrib non-free rpi
+          #deb-src https://mirror.u1f602.com/debian/ bullseye main
+          #deb-src https://mirror.u1f602.com/raspbian/ bullseye main contrib non-free rpi
+    - name: set RPI hostname
+      # This will make it so the dhcp-set hostname will take effect.
+      copy:
+        dest: /etc/hostname
+        content: localhost
+    - name: Remove old list
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/raspi.list
+        state: absent
+    - name: remove piwiz
+      apt:
+        state: absent
+        name:
+          - piwiz
+    - name: install packages
+      apt:
+        state: present
+        name:
+          - i2c-tools
+          - libsox-fmt-mp3
+          - pavucontrol
+          - pigpio
+          - pulseaudio
+          - pulseaudio-module-bluetooth
+          - rpi-update
+          - sox
+    - name: Upgrade once to latest version
+      run_once: true
+      apt:
+        upgrade: dist
+#    - name: Upgrade RPI firmware
+#      run_once: true
+#      shell: yes | rpi-update || true
+    - name: setup swood to updated groups
+      user:
+        name: smw
+        comment: Stephen Wood
+        groups: sudo, adm, gpio, bluetooth, pulse-access
+    - name: Remove the default pi user
+      user:
+        name: pi
+        state: absent
+        remove: yes
+        force: true
+    - name: enable RNG config
+      blockinfile:
+        path: /etc/default/rng-tools-debian
+        block: |
+          HRNGDEVICE=/dev/hwrng
+    - name: Setup boot.txt
+      blockinfile:
+        path: /boot/config.txt
+        block: |
+          [all]
+          dtparam=watchdog=on
+    - name: Enable systemd watchdog
+      blockinfile:
+        path: /etc/systemd/system.conf
+        backup: yes
+        block: |
+          RuntimeWatchdogSec=10
+          ShutdownWatchdogSec=10min
+          RebootWatchdogSec=10min
+          WatchdogDevice=/dev/watchdog
+    - name: setup unattended upgrades
+      apt:
+        state: present
+        name:
+          - apt-listchanges
+          - bsd-mailx
+          - unattended-upgrades
+    - name: setup /etc/apt/apt.conf.d/50unattended-upgrades
+      copy:
+        dest: /etc/apt/apt.conf.d/50unattended-upgrades
+        content: |
+          Unattended-Upgrade::Mail "contact.stephen.wood@gmail.com";
+          Unattended-Upgrade::Automatic-Reboot "true";
+          Unattended-Upgrade::Automatic-Reboot-Time "14:00";
+    - name: setup /etc/apt/apt.conf.d/20auto-upgrades
+      copy:
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Download-Upgradeable-Packages "1";
+          APT::Periodic::Unattended-Upgrade "1";
+          APT::Periodic::Verbose "1";
+          APT::Periodic::AutocleanInterval "7";
+    - name: enable unattended upgrades
+      run_once: true
+      shell: "dpkg-reconfigure --priority=low unattended-upgrades -fnoninteractive"
