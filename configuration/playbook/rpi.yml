@@ -4,6 +4,7 @@
   tasks:
     - name: set RPI hostname
       # This will make it so the dhcp-set hostname will take effect.
+      run_once: true
       copy:
         dest: /etc/hostname
         content: localhost
