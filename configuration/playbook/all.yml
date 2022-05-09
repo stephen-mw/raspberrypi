@@ -10,12 +10,12 @@
         content: 'Acquire::http::Proxy "http://cato.local:3142/";'
     - name: install packages
       apt:
-        state: present
+        update_cache: true
+        state: latest
         name:
+          - chrony
           - curl
           - git
-          - ntp
-          - python3
           - python3-pip
           - rng-tools
           - rsyslog
@@ -29,8 +29,16 @@
         name: smw
         comment: Stephen Wood
         groups: sudo, adm
+    - name: add github to authorized_keys
+      run_once: true
+      shell: ssh-keyscan github.com >> /etc/ssh/ssh_known_hosts
+    - name: Set authorized keys for smw
+      ansible.posix.authorized_key:
+        user: smw
+        state: present
+        key: https://github.com/stephen-mw.keys
     - name: update smw keys
-      shell: ssh-import-id -o ~smw/.ssh/.authorized_keys gh:stephen-mw
+      shell: ssh-import-id -o ~smw/.ssh/authorized_keys gh:stephen-mw
       run_once: true
     - name: Update sshd_config
       copy:
@@ -49,9 +57,13 @@
             smw ALL=(ALL) NOPASSWD: ALL
             # Allow sudo to keep using agent forwarding
             Defaults    env_keep+=SSH_AUTH_SOCK
+    - name: custom shell
+      copy:
+        src: ../assets/profile.sh
+        dest: /etc/profile.d/custom.sh
     - name: setup vim
       copy:
-        src: ../vimrc
+        src: ../assets/vimrc
         dest: /etc/vim/vimrc.local
     - name: vim default
       shell: update-alternatives --set editor /usr/bin/vim.basic
