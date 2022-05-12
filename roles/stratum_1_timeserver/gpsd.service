@@ -5,7 +5,7 @@ Requires=dev-ttyS0.device
 [Service]
 User=root
 EnvironmentFile=/etc/default/gpsd
-ExecStart=/usr/local/sbin/gpsd $GPSD_OPTIONS $OPTIONS $DEVICES
+ExecStart=gpsd $GPSD_OPTIONS $OPTIONS $DEVICES
 KillMode=process
 Restart=on-failure
 

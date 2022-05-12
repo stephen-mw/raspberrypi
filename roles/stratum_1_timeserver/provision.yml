@@ -1,0 +1,77 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: setup hostname
+      ansible.builtin.hostname:
+        name: greenhouse.u1f602.com
+    - name: install packages
+      apt:
+        update_cache: true
+        state: present
+        name:
+          - chrony
+          - gpsd
+          - pps-tools
+    - name: set gpsd config
+      blockinfile:
+        path: /etc/default/gpsd
+        block: |
+          DEVICES="/dev/ttyS0 /dev/pps0"
+          GPSD_OPTIONS="-r -n -N -b"
+    - name: stop gpsd socket
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: no
+        state: stopped
+        masked: true
+      with_items:
+        - gpsd.socket
+        - serial-getty@ttyS0.service
+        - ntp
+        - systemd-timesyncd.service
+    - name: setupserial
+      blockinfile:
+        dest: /boot/config.txt
+        content: |
+          # Enable serial input
+          enable_uart=1
+          # Set the PPS GPIO pin for the kernel
+          dtoverlay=pps-gpio,gpiopin=18
+    - name: setup pps
+      blockinfile:
+        path: /etc/modules
+        block: pps-gpio
+    - name: comment out serial
+      replace:
+        path: /boot/cmdline.txt
+        regexp: "console=ttyAMA0,115200"
+        replace: ""
+    - name: setup udev rules
+      copy:
+        dest: /etc/udev/rules.d/99-gps.rules
+        content: |
+          SUBSYSTEM=="tty", GROUP="tty", MODE="0777"
+          SUBSYSTEM=="pps", GROUP="tty", MODE="0664"
+          SUBSYSTEM=="rtc", GROUP="tty", MODE="0664"
+    - name: setup chrony conf
+      copy:
+        src: ./chrony.conf
+        dest: /etc/chrony/chrony.conf
+    - name: setup chrony service
+      copy:
+        src: ./chrony.service
+        dest: /etc/systemd/system/chrony.service
+    - name: setup gpsd systemd service
+      copy:
+        src: ./gpsd.service
+        dest: /etc/systemd/system/gpsd.service
+        mode: 0644
+    - name: start gpsd
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      with_items:
+        - gpsd
+        - chrony

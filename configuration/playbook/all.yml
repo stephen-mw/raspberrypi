@@ -16,6 +16,7 @@
           - chrony
           - curl
           - git
+          - lsof
           - python3-pip
           - rng-tools
           - rsyslog
