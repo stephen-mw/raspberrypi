@@ -50,6 +50,11 @@
           - pigpio
           - rpi-update
           - sox
+    - name: install wiring pi
+      shell: |
+        wget https://project-downloads.drogon.net/wiringpi-latest.deb
+        dpkg -i wiringpi-latest.deb
+        rm -r -- wiringpi-latest.deb
 # This currently breaks the pi's bluetooth
 #    - name: Upgrade RPI firmware
 #      run_once: true
@@ -58,7 +63,13 @@
       user:
         name: smw
         comment: Stephen Wood
-        groups: sudo, adm, gpio, bluetooth, pulse-access
+        groups:
+          - adm
+          - bluetooth
+          - gpio
+          - i2c
+          - pulse-access
+          - sudo
     - name: Remove the default pi user
       user:
         name: pi
