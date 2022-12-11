@@ -1,0 +1,29 @@
+---
+- hosts: rpi.local
+  become: yes
+  tasks:
+    - name: install packages
+      run_once: true
+      apt:
+        update_cache: true
+        state: present
+        name:
+          - libcurl3-dev
+          - libjansson-dev
+          - libp11-dev
+          - librtlsdr-dev
+          - libssl-dev
+          - libusb-1.0-0-dev
+          - libxml2
+          - libxml2-dev
+    - name: compile and install
+      run_once: true
+      shell: |
+        cd /usr/local/src/
+        git clone --depth=50 --branch=master https://github.com/nhorman/rng-tools.git nhorman/rng-tools
+        cd nhorman/rng-tools
+        git submodule update --init --recursive
+        ./autogen
+        ./configure --without-pkcs11 --without-rtlsdr
+        make
+        make install

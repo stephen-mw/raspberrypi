@@ -2,12 +2,12 @@
 - hosts: all
   become: yes
   tasks:
-    - name: setup apt proxy cache
-      copy:
-        dest: /etc/apt/apt.conf.d/02mirror
-        owner: root
-        mode: 0644
-        content: 'Acquire::http::Proxy "http://cato.local:3142/";'
+#    - name: setup apt proxy cache
+#      copy:
+#        dest: /etc/apt/apt.conf.d/02mirror
+#        owner: root
+#        mode: 0644
+#        content: 'Acquire::http::Proxy "http://cato.local:3142/";'
     - name: install packages
       apt:
         update_cache: true
@@ -25,6 +25,23 @@
           - ssh-import-id
           - vim
           - wget
+    - name: install python packages
+      pip:
+        name:
+          - black
+          - isort
+    - name: Add chrony sources
+      when: '"greenhouse*" != "${ansible_hostname}"'
+      copy:
+        dest: /etc/chrony/sources.d/local.sources
+        owner: root
+        mode: 0644
+        content: |
+          # Local NTP backups
+          server 10.10.10.12 iburst
+          server 10.10.10.10 iburst
+          pool time.google.com iburst maxsources 3
+          pool pool.ntp.org iburst maxsources 3
     - name: Add me
       user:
         name: smw
@@ -43,7 +60,7 @@
       run_once: true
     - name: Update sshd_config
       copy:
-        dest: /etc/ssh/sshd_config
+        dest: /etc/ssh/sshd_config.d/custom
         content: |
           AllowUsers smw
           PasswordAuthentication no
@@ -68,35 +85,10 @@
         dest: /etc/vim/vimrc.local
     - name: vim default
       shell: update-alternatives --set editor /usr/bin/vim.basic
-      run_once: true
-    - name: setup shell
+    - name: setup secret envs file in /etc/profile.d/secrets.sh
       copy:
-        dest: /etc/profile.d/custom.sh
-        content: |
-          # Better ls command
-          alias ll="ls -ltr"
-
-          # make less case insensitive for searches and display verbose prompt by default
-          export LESS="-irMS"
-
-          # Add terminal colors
-          export CLICOLOR=1
-
-          # Don't put duplicate lines in the history. also, don't save lines that begin
-          # with a whitespace character
-          export HISTCONTROL=erasedups:ignorespace
-          export HISTTIMEFORMAT='%F %T '
-          export HISTSIZE=20000
-          shopt -s histappend
-
-          # Make the bash history save for all open terminals
-          export PROMPT_COMMAND='history -a'
-
-          # Collapses multi-line commands into a single history item
-          shopt -s cmdhist
-
-          # ignore these short commands in the history
-          export HISTIGNORE="&:cd:fg:bg:pwd:pd:po:pushd:popd:dirs:ls:jobs:top"
+        dest: /etc/profile.d/secrets.sh
+        src: rpirc
     - name: setup cron
       copy:
         dest: /etc/cron.d/ansible
@@ -104,12 +96,8 @@
         mode: 0644
         content: |
           MAILTO=contact.stephen.wood@gmail.com
-          BASH_ENV=/etc/environment.d/secret
+          BASH_ENV=/etc/profile.d/secrets.sh
           SHELL=/usr/bin/bash
-          @daily smw githu-import-id gh:stephen-mw
-          @restart smw githu-import-id gh:stephen-mw
-    - name: setup rpirc in /etc/environment
-      blockinfile:
-        insertbefore: bof
-        dest: /etc/environment
-        block: "{{ lookup('file', 'rpirc') }}"
+          @daily smw github-import-id gh:stephen-mw
+          @restart smw github-import-id gh:stephen-mw
+

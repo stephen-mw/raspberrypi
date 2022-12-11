@@ -38,6 +38,8 @@
           enable_uart=1
           # Set the PPS GPIO pin for the kernel
           dtoverlay=pps-gpio,gpiopin=18
+          # Use RTC
+          dtoverlay=i2c-rtc,ds3231
     - name: setup pps
       blockinfile:
         path: /etc/modules
@@ -75,3 +77,12 @@
       with_items:
         - gpsd
         - chrony
+    - name: disable fake hwclock
+      apt:
+        name: fake-hwclock
+        state: absent
+    - name: comment out hwclock exit
+      replace:
+        path: /lib/udev/hwclock-set
+        regexp: "exit 0"
+        replace: "#exit 0"

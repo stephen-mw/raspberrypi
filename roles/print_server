@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+apt update -y
+
+# The foo2zjs are for Dell laser prints, the gutenberg drivers are for other printers.
+apt install -y                \
+    cups                      \
+    libsane-extras            \
+    printer-driver-gutenprint \
+    sane                      \
+    sane-utils
+
+# This is the user I run my scanning software on. The pass w enerated with
+# something like this:
+#   openssl passwd -6 -salt xyz  yourpass
+mkdir -p /etc/scanny
+useradd -d /etc/scanny -p '$6$97a6f$MIw8LxJpwTsbAtQ4QcnoPVYPyO/X/j2ht6EnSAXDsGTC1OKb2Wl8Faz570q9WBuRWf2SDlNkeufmkKv/031CO0' -G lp,lpadmin,scanner -s /usr/sbin/nologin --system scanny
+
+# Anyone can print!
+sudo cupsctl --remote-any
+
+# Make sure scanny user can modify/admin CUPS
+perl  -i.original  -pe 's|^    Require user @SYSTEM|    Require user @SYSTEM scanny |g' /etc/cups/cupsd.conf
