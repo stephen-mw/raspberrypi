@@ -40,6 +40,9 @@
           dtoverlay=pps-gpio,gpiopin=18
           # Use RTC
           dtoverlay=i2c-rtc,ds3231
+          # For pi3 the bluetooth module must be disabled because it interferes
+          # with the serial port
+          dtoverlay=disable-bt
     - name: setup pps
       blockinfile:
         path: /etc/modules
