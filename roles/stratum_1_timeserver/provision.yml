@@ -17,7 +17,7 @@
       blockinfile:
         path: /etc/default/gpsd
         block: |
-          DEVICES="/dev/ttyS0 /dev/pps0"
+          DEVICES="/dev/ttyAMA0 /dev/pps0"
           GPSD_OPTIONS="-r -n -N -b"
     - name: stop gpsd socket
       ansible.builtin.systemd:
