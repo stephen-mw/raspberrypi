@@ -1,0 +1,48 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: install packages
+      apt:
+        update_cache: true
+        state: present
+        name:
+          - python3-pip
+    - name: compile mjpeg-streamer
+      script: compile_mjpeg_streamer
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: octoprint
+        use: systemd
+    - name: Install octoprint pip
+      ansible.builtin.pip:
+        name: octoprint
+        state: latest
+    - name: Update /etc/hosts file
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          127.0.0.1 octoprint
+    - name: add octoprint user
+      ansible.builtin.user:
+        name: octoprint
+        shell: /usr/sbin/nologin
+        groups:
+          - dialout
+          - tty
+          - video
+        system: true
+        create_home: false
+        home: /tmp
+    # Start the service
+    - name: Download systemd unit
+      ansible.builtin.copy:
+        src: service.systemd
+        dest: /etc/systemd/system/octoprint.service
+        mode: '0440'
+    - name: Start octoprint service
+      ansible.builtin.systemd:
+        daemon_reload: yes
+        state: restarted
+        name: octoprint
+        enabled: yes

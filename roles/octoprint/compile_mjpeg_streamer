@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Compile mjpeg streamer for raspberry pi
+
+# Don't compile if it already exists
+mjpg_streamer="$(which mjpg_streamer || true)"
+if [[ -x ${mjpg_streamer} ]]; then
+    echo "mjpg_streamer is available. Not compiling."
+    exit
+fi
+
+sudo apt install -y     \
+    cmake               \
+    ffmpeg              \
+    imagemagick         \
+    libjpeg62-turbo-dev \
+    libv4l-dev          \
+    subversion
+
+cd /usr/local/src
+git clone https://github.com/jacksonliam/mjpg-streamer.git
+cd mjpg-streamer/mjpg-streamer-experimental
+export LD_LIBRARY_PATH=.
+make
+make install
