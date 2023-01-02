@@ -2,6 +2,12 @@
 - hosts: all
   become: yes
   tasks:
+    - name: setup apt proxy cache
+      copy:
+        dest: /etc/apt/apt.conf.d/02mirror
+        owner: root
+        mode: 0644
+        content: 'Acquire::http::Proxy "http://cato.local:3142/";'
     - name: set RPI hostname
       # This will make it so the dhcp-set hostname will take effect.
       run_once: true
@@ -50,11 +56,11 @@
           - pigpio
           - rpi-update
           - sox
-#    - name: install wiring pi
-#      shell: |
-#        wget https://project-downloads.drogon.net/wiringpi-latest.deb
-#        dpkg -i wiringpi-latest.deb
-#        rm -r -- wiringpi-latest.deb
+    - name: install wiring pi
+      shell: |
+        wget https://project-downloads.drogon.net/wiringpi-latest.deb
+        dpkg -i wiringpi-latest.deb
+        rm -r -- wiringpi-latest.deb
 # This currently breaks the pi's bluetooth
 #    - name: Upgrade RPI firmware
 #      run_once: true
