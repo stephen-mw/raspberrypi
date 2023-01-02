@@ -1,0 +1,25 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Add kiwix user
+      ansible.builtin.user:
+        name: kiwix
+        shell: /bin/false
+        system: yes
+        home: /etc/kiwix
+        create_home: true
+    - name: setup systemd service
+      copy:
+        dest: /etc/systemd/system/kiwix.service
+        content: |
+          [Unit]
+          Description=Kiwixi Server
+
+          [Service]
+          User=kiwix
+          ExecStart=bash -c '/etc/kiwix/kiwix-serve -p 8080 /etc/kiwix/library/*'
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target

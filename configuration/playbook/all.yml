@@ -23,6 +23,7 @@
           - screen
           - software-properties-common
           - ssh-import-id
+          - unp
           - vim
           - wget
     - name: install python packages
