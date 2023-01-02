@@ -2,12 +2,6 @@
 - hosts: all
   become: yes
   tasks:
-#    - name: setup apt proxy cache
-#      copy:
-#        dest: /etc/apt/apt.conf.d/02mirror
-#        owner: root
-#        mode: 0644
-#        content: 'Acquire::http::Proxy "http://cato.local:3142/";'
     - name: install packages
       apt:
         update_cache: true
