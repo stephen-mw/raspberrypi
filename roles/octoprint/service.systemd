@@ -8,7 +8,7 @@ Environment="LC_ALL=C.UTF-8"
 Environment="LANG=C.UTF-8"
 Type=exec
 User=octoprint
-ExecStart=/usr/local/bin/octoprint serve
+ExecStart=/usr/local/bin/octoprint serve --port=80 --config /etc/octoprint/config.yml --basedir /etc/octoprint
 
 [Install]
 WantedBy=multi-user.target

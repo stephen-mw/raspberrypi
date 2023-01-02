@@ -1,0 +1,9 @@
+[Unit]
+Description=Start USB webcam for octoprint
+
+[Service]
+ExecStart=/usr/bin/start_webcam
+ExecStartPost=chown octoprint /usr/local/src/mjpg-streamer/mjpg-streamer-experimental/output_http.so
+
+[Install]
+WantedBy=multi-user.target

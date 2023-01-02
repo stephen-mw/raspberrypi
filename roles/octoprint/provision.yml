@@ -7,6 +7,7 @@
         update_cache: true
         state: present
         name:
+          - prusa-slicer  # Only needed for updating firmware
           - python3-pip
     - name: compile mjpeg-streamer
       script: compile_mjpeg_streamer
@@ -32,14 +33,41 @@
           - tty
           - video
         system: true
-        create_home: false
-        home: /tmp
+        create_home: true
+        home: /etc/octoprint
+    # This may not be necessary if restoring from a backup
+    - name: create octoprint settings
+      ansible.builtin.copy:
+        src: config.yml
+        dest: /etc/octoprint/config.yml
+        owner: octoprint
+        mode: '0644'
+        directory_mode: 755
+    - name: Copy webcam startup script
+      ansible.builtin.copy:
+        src: start_webcam
+        dest: /usr/bin/start_webcam
+        mode: '0755'
+    # Start the webcam service
+    - name: Copy webcam systemd service
+      ansible.builtin.copy:
+        src: webcam.systemd
+        dest: /etc/systemd/system/webcam.service
+        mode: '0440'
+    - name: Start octoprint webcam service
+      ansible.builtin.systemd:
+        daemon_reload: yes
+        state: restarted
+        name: webcam
+        enabled: yes
     # Start the service
     - name: Download systemd unit
       ansible.builtin.copy:
         src: service.systemd
         dest: /etc/systemd/system/octoprint.service
         mode: '0440'
+    # Change from `restarted` to `started` if you're in the middle of a print
+    # and don't want it to be interrupted
     - name: Start octoprint service
       ansible.builtin.systemd:
         daemon_reload: yes
