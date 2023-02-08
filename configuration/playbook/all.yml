@@ -25,6 +25,14 @@
         name:
           - black
           - isort
+    - name: Add sudo/adm group
+      ansible.builtin.group:
+        name: "{{ item }}"
+        state: present
+        system: true
+      loop:
+        - adm
+        - sudo
     - name: Add chrony sources
       when: '"greenhouse*" != "${ansible_hostname}"'
       copy:
@@ -42,6 +50,7 @@
         name: smw
         comment: Stephen Wood
         groups: sudo, adm
+        shell: /bin/bash
     - name: add github to authorized_keys
       run_once: true
       shell: ssh-keyscan github.com >> /etc/ssh/ssh_known_hosts
@@ -53,13 +62,6 @@
     - name: update smw keys
       shell: ssh-import-id -o ~smw/.ssh/authorized_keys gh:stephen-mw
       run_once: true
-    - name: Update sshd_config
-      copy:
-        dest: /etc/ssh/sshd_config.d/custom
-        content: |
-          AllowUsers smw
-          PasswordAuthentication no
-          PermitRootLogin no
     - name: setup root user
       shell: cp -r /etc/skel/. /root/
       run_once: true
@@ -95,4 +97,13 @@
           SHELL=/usr/bin/bash
           @daily smw github-import-id gh:stephen-mw
           @restart smw github-import-id gh:stephen-mw
-
+    - name: lock down sshd
+      copy:
+        dest: /etc/ssh/sshd_config.d/ansible
+        owner: root
+        mode: 0644
+        content: |
+          Include /etc/ssh/sshd_config.d/*.conf
+          AllowUsers smw
+          PasswordAuthentication no
+          UseDNS no

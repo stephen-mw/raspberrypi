@@ -1,0 +1,26 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: install packages
+      apt:
+        update_cache: true
+        state: latest
+        name:
+          - firewall-config
+          - firewalld
+          - nginx
+    - name: permit traffic for http/https/ssh
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        permanent: true
+        state: enabled
+      with_list:
+        - http
+        - https
+        - ssh
+    - name: permit rtorrent
+      ansible.posix.firewalld:
+        port: 49164/tcp
+        permanent: true
+        state: enabled
