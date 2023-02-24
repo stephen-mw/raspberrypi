@@ -7,9 +7,11 @@
         update_cache: true
         state: latest
         name:
+          - certbot
           - firewall-config
           - firewalld
           - nginx
+          - python3-certbot-nginx
     - name: permit traffic for http/https/ssh
       ansible.posix.firewalld:
         service: "{{ item }}"

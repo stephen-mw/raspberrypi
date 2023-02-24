@@ -51,6 +51,12 @@
         comment: Stephen Wood
         groups: sudo, adm
         shell: /bin/bash
+    - name: add github known host key
+      ansible.builtin.known_hosts:
+        name: github.com
+        key: github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+        path: /etc/ssh/ssh_known_hosts
+        state: present
     - name: add github to authorized_keys
       run_once: true
       shell: ssh-keyscan github.com >> /etc/ssh/ssh_known_hosts
