@@ -9,6 +9,7 @@ Environment="LANG=C.UTF-8"
 Type=exec
 User=octoprint
 ExecStart=/usr/local/bin/octoprint serve --port=80 --config /etc/octoprint/config.yml --basedir /etc/octoprint
+AmbientCapabilities=CAP_NET_BIND_SERVICE
 
 [Install]
 WantedBy=multi-user.target

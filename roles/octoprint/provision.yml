@@ -86,7 +86,7 @@
       copy:
         src: "{{ item }}.service"
         dest: "/etc/systemd/system/{{ item }}.service"
-        mode: 644
+        mode: 0440
       loop:
         - libcamera
         - websockify
