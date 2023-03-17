@@ -119,3 +119,6 @@
           AllowUsers smw
           PasswordAuthentication no
           UseDNS no
+          X11Forwarding yes
+          X11UseLocalhost no
+          AddressFamily inet
