@@ -49,6 +49,7 @@
       apt:
         update_cache: true
         state: present
+        install_recommends: false
         name:
           - i2c-tools
           - libsox-fmt-mp3
@@ -56,6 +57,8 @@
           - pigpio
           - rpi-update
           - sox
+          - xinit
+          - xserver-xorg
     - name: install wiring pi
       shell: |
         wget https://project-downloads.drogon.net/wiringpi-latest.deb
@@ -86,6 +89,12 @@
       copy:
         dest: /etc/rsyslog.d/custom.conf
         content: '*.*  @cato.u1f602.com:514'
+    - name: disable ipv6
+      blockinfile:
+        path: /etc/sysctl.conf
+        block: |
+          # Disable ipv6
+          net.ipv6.conf.all.disable_ipv6 = 1
     - name: enable RNG config
       blockinfile:
         path: /etc/default/rng-tools-debian

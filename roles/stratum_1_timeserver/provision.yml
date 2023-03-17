@@ -11,14 +11,20 @@
         state: present
         name:
           - chrony
-          - gpsd
           - pps-tools
+    - name: compile gpsd
+      script: compile_gpsd
     - name: set gpsd config
-      blockinfile:
-        path: /etc/default/gpsd
-        block: |
+      copy:
+        dest: /etc/default/gpsd
+        content: |
+          USBAUTO="true"
           DEVICES="/dev/ttyAMA0 /dev/pps0"
           GPSD_OPTIONS="-r -n -N -b"
+    - name: set PYTHONPATH for xgps
+      blockinfile:
+        dest: /etc/bash.bashrc
+        content: "export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/dist-packages/"
     - name: stop gpsd socket
       ansible.builtin.systemd:
         name: "{{ item }}"
@@ -26,9 +32,10 @@
         state: stopped
         masked: true
       with_items:
-        - gpsd.socket
+        #- gpsd.socket
+        #- ntp
+        - serial-getty@ttyAMA0.service
         - serial-getty@ttyS0.service
-        - ntp
         - systemd-timesyncd.service
     - name: setupserial
       blockinfile:
@@ -39,26 +46,28 @@
           # Set the PPS GPIO pin for the kernel
           dtoverlay=pps-gpio,gpiopin=18
           # Use RTC
-          dtoverlay=i2c-rtc,ds3231
+          dtoverlay=i2c-rtc,ds1307
           # For pi3 the bluetooth module must be disabled because it interferes
           # with the serial port
           dtoverlay=disable-bt
+          dtoverlay=pi3-disable-bt
     - name: setup pps
       blockinfile:
         path: /etc/modules
         block: pps-gpio
+    # This needs to be fixed and messes with permissions of ttyAMA0
     - name: comment out serial
       replace:
         path: /boot/cmdline.txt
-        regexp: "console=ttyAMA0,115200"
+        regexp: "console=serial0,115200 "
         replace: ""
     - name: setup udev rules
       copy:
         dest: /etc/udev/rules.d/99-gps.rules
         content: |
-          SUBSYSTEM=="tty", GROUP="tty", MODE="0777"
-          SUBSYSTEM=="pps", GROUP="tty", MODE="0664"
-          SUBSYSTEM=="rtc", GROUP="tty", MODE="0664"
+          SUBSYSTEM=="tty", GROUP="tty"
+          SUBSYSTEM=="pps", GROUP="tty"
+          SUBSYSTEM=="rtc", GROUP="tty"
     - name: setup chrony conf
       copy:
         src: ./chrony.conf
