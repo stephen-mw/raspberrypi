@@ -25,6 +25,12 @@
         name:
           - black
           - isort
+    - name: install golang
+      script: install_golang
+      environment:
+        ARCH: "{{ ansible_architecture }}"
+        VERSION: "1.20.2"
+      script: install_golang
     - name: Add sudo/adm group
       ansible.builtin.group:
         name: "{{ item }}"

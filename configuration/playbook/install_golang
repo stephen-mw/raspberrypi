@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# These vars must be set by ANSIBLE
+# export VERSION="1.20.1"
+# export ARCH="armv6l"
+
+# Support for 32 bit, 64 bit ARM, and 64bit intel
+if [["${ARCH}" == "armv7l" ]]; then
+    ARCH="armv6"
+elif [[ "${ARCH}" == "aarch64" ]]; then
+    ARCH="arm64"
+elif [[ "${ARCH}" == "x86_64" ]]; then
+    ARCH="amd64"
+else
+    echo "non-compatible architecture version: ${ARCH}"
+    exit 1
+fi
+
+if go version | grep -q ${VERSION}; then
+    echo "Go is already at latest version"
+    exit
+fi
+
+cd /tmp
+rm -fv "go${VERSION}.linux-${ARCH}.tar.gz" || true
+wget "https://go.dev/dl/go${VERSION}.linux-${ARCH}.tar.gz"
+sudo tar -C /usr/local -xvf "go${VERSION}.linux-${ARCH}.tar.gz"
+sudo ln -sf /usr/local/go/bin/* /usr/bin/
