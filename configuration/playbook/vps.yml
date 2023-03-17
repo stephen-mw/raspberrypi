@@ -2,6 +2,15 @@
 - hosts: all
   become: yes
   tasks:
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: vps
+        use: systemd
+    - name: Update /etc/hosts file
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          127.0.0.1 vps
     - name: install packages
       apt:
         update_cache: true

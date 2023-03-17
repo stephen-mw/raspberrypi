@@ -20,6 +20,15 @@
           - unp
           - vim
           - wget
+    - name: remove apparmor
+      apt:
+        state: absent
+        name:
+          - apparmor
+    - name: Remove popularity contest
+      ansible.builtin.file:
+        path: /etc/cron.daily/popularity-contest
+        state: absent
     - name: install python packages
       pip:
         name:
@@ -107,8 +116,8 @@
           MAILTO=contact.stephen.wood@gmail.com
           BASH_ENV=/etc/profile.d/secrets.sh
           SHELL=/usr/bin/bash
-          @daily smw github-import-id gh:stephen-mw
-          @restart smw github-import-id gh:stephen-mw
+          @daily smw /usr/bin/ssh-import-id gh:stephen-mw
+          @restart smw /usr/bin/ssh-import-id gh:stephen-mw
     - name: lock down sshd
       copy:
         dest: /etc/ssh/sshd_config.d/ansible
