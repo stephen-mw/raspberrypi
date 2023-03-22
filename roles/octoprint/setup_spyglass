@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+
+# DESTINATION set by ansible
+
+if [[ ! -d "${DESTINATION}" ]]; then
+    git clone https://github.com/roamingthings/spyglass.git ${DESTINATION}
+fi
+
+cd ${DESTINATION}
+git pull
+
+pip install -e .

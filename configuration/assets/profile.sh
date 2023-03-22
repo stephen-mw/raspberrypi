@@ -4,6 +4,8 @@ export LESS="-irMS"
 # Add terminal colors
 export CLICOLOR=1
 
+export FZF_DEFAULT_OPTS='--multi --no-height --extended'
+
 # Don't put duplicate lines in the history. also, don't save lines that begin
 # with a whitespace character
 export HISTCONTROL=erasedups:ignorespace

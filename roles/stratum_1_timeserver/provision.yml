@@ -2,9 +2,6 @@
 - hosts: all
   become: yes
   tasks:
-    - name: setup hostname
-      ansible.builtin.hostname:
-        name: greenhouse.u1f602.com
     - name: install packages
       apt:
         update_cache: true
@@ -25,49 +22,6 @@
       blockinfile:
         dest: /etc/bash.bashrc
         content: "export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/dist-packages/"
-    - name: stop gpsd socket
-      ansible.builtin.systemd:
-        name: "{{ item }}"
-        enabled: no
-        state: stopped
-        masked: true
-      with_items:
-        #- gpsd.socket
-        #- ntp
-        - serial-getty@ttyAMA0.service
-        - serial-getty@ttyS0.service
-        - systemd-timesyncd.service
-    - name: setupserial
-      blockinfile:
-        dest: /boot/config.txt
-        content: |
-          # Enable serial input
-          enable_uart=1
-          # Set the PPS GPIO pin for the kernel
-          dtoverlay=pps-gpio,gpiopin=18
-          # Use RTC
-          dtoverlay=i2c-rtc,ds1307
-          # For pi3 the bluetooth module must be disabled because it interferes
-          # with the serial port
-          dtoverlay=disable-bt
-          dtoverlay=pi3-disable-bt
-    - name: setup pps
-      blockinfile:
-        path: /etc/modules
-        block: pps-gpio
-    # This needs to be fixed and messes with permissions of ttyAMA0
-    - name: comment out serial
-      replace:
-        path: /boot/cmdline.txt
-        regexp: "console=serial0,115200 "
-        replace: ""
-    - name: setup udev rules
-      copy:
-        dest: /etc/udev/rules.d/99-gps.rules
-        content: |
-          SUBSYSTEM=="tty", GROUP="tty"
-          SUBSYSTEM=="pps", GROUP="tty"
-          SUBSYSTEM=="rtc", GROUP="tty"
     - name: setup chrony conf
       copy:
         src: ./chrony.conf
@@ -89,12 +43,3 @@
       with_items:
         - gpsd
         - chrony
-    - name: disable fake hwclock
-      apt:
-        name: fake-hwclock
-        state: absent
-    - name: comment out hwclock exit
-      replace:
-        path: /lib/udev/hwclock-set
-        regexp: "exit 0"
-        replace: "#exit 0"

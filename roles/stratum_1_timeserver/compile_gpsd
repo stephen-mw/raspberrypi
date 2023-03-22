@@ -10,7 +10,7 @@ fi
 
 # Most of the python libraries below are for using xgps, and can be skipped
 # if you don't plan to run xgps
-sudo apt remove -y --purge gpsd libgps28
+sudo apt remove -y --purge gpsd
 sudo apt install -y    \
     build-essential    \
     libdbus-1-dev      \

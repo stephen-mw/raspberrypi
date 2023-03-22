@@ -8,117 +8,71 @@
         state: present
         name:
           - libcamera-apps-lite
-          - nginx
           - prusa-slicer  # Only needed for updating firmware
+          - python3-opengl
+          - python3-picamera2
           - python3-pip
-          - websockify
-    - name: compile mjpeg-streamer
-      script: compile_mjpeg_streamer
+          - python3-pyqt5
+          - python3-virtualenv
     - name: Set hostname
       ansible.builtin.hostname:
         name: octoprint
         use: systemd
-    - name: Install octoprint pip
-      ansible.builtin.pip:
-        name: octoprint
-        state: latest
     - name: Update /etc/hosts file
       blockinfile:
         path: /etc/hosts
         block: |
-          127.0.0.1 octoprint
-    - name: add octoprint user
-      ansible.builtin.user:
-        name: octoprint
-        shell: /usr/sbin/nologin
-        groups:
-          - dialout
-          - tty
-          - video
-        system: true
-        create_home: true
-        home: /etc/octoprint
+          127.0.0.1 octoprint octoprint.local
+#    - name: add octoprint user
+#      ansible.builtin.user:
+#        name: octoprint
+#        shell: /usr/sbin/nologin
+#        groups:
+#          - dialout
+#          - tty
+#          - video
+#        system: true
+#        create_home: true
+#        home: /etc/octoprint
+#    - name: Install octoprint pip
+#      ansible.builtin.pip:
+#        name: octoprint
+#        state: latest
     # This may not be necessary if restoring from a backup
-    - name: create octoprint settings
-      ansible.builtin.copy:
-        src: config.yml
-        dest: /etc/octoprint/config.yml
-        owner: octoprint
-        mode: '0644'
-        directory_mode: 755
-    #- name: Copy webcam startup script
-    #  ansible.builtin.copy:
-    #    src: start_webcam
-    #    dest: /usr/bin/start_webcam
-    #    mode: '0755'
+#    - name: create octoprint settings
+#      ansible.builtin.copy:
+#        src: config.yml
+#        dest: /etc/octoprint/config.yml
+#        owner: octoprint
+#        mode: '0644'
+#        directory_mode: 755
+    - name: setup spyglass
+      script: setup_spyglass
+      environment:
+        DESTINATION: "/usr/local/src/spyglass"
     # Start the webcam service
-    #- name: Copy webcam systemd service
-    #  ansible.builtin.copy:
-    #    src: webcam.systemd
-    #    dest: /etc/systemd/system/webcam.service
-    #    mode: '0440'
-    #- name: Start octoprint webcam service
-    #  ansible.builtin.systemd:
-    #    daemon_reload: yes
-    #    state: restarted
-    #    name: webcam
-    #    enabled: yes
-    # Start the service
-    - name: Download systemd unit
+    - name: Copy webcam systemd service
       ansible.builtin.copy:
-        src: service.systemd
-        dest: /etc/systemd/system/octoprint.service
+        src: webcam.systemd
+        dest: /etc/systemd/system/webcam.service
         mode: '0440'
-    # Change from `restarted` to `started` if you're in the middle of a print
-    # and don't want it to be interrupted
-    - name: Start octoprint service
+    - name: Start webcam service
       ansible.builtin.systemd:
         daemon_reload: yes
-        state: restarted
-        name: octoprint
+        state: started
+        name: webcam
         enabled: yes
-    - name: copy websocket service
-      copy:
-        src: websockify.service
-        dest: /etc/systemd/system/websockify.service
-        mode: 644
-    - name: copy webcam services
-      copy:
-        src: "{{ item }}.service"
-        dest: "/etc/systemd/system/{{ item }}.service"
-        mode: 0440
-      loop:
-        - libcamera
-        - websockify
-    - name: start webcam services
-      ansible.builtin.systemd:
-        daemon_reload: yes
-        state: restarted
-        name: "{{ item }}"
-        enabled: yes
-      loop:
-        - libcamera
-        - websockify
-    # This is for the webcam, makes it accessible on :8080
-    - name: setup html
-      copy:
-        src: index.html
-        dest: /var/www/index.html
-        mode: 644
-    - name: setup nginx
-      copy:
-        src: default.nginx
-        dest: /etc/nginx/sites-enabled/default
-        mode: 644
-    - name: Restart nginx
-      ansible.builtin.systemd:
-        daemon_reload: yes
-        state: restarted
-        name: nginx
-        enabled: yes
-
-
-
-
-
-
+#    # Start the service
+#    - name: Download octoprint systemd unit
+#      ansible.builtin.copy:
+#        src: service.systemd
+#        dest: /etc/systemd/system/octoprint.service
+#        mode: '0440'
+#    # Change from `restarted` to `started` if you're in the middle of a print
+#    # and don't want it to be interrupted
+#    - name: Start octoprint service
+#      ansible.builtin.systemd:
+#        daemon_reload: yes
+#        state: restarted
+#        name: octoprint
+#        enabled: yes

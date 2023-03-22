@@ -1,9 +1,10 @@
 [Unit]
-Description=Start USB webcam for octoprint
+Description=Start RPI webcam for octoprint
 
 [Service]
-ExecStart=/usr/bin/start_webcam
-ExecStartPost=chown octoprint /usr/local/src/mjpg-streamer/mjpg-streamer-experimental/output_http.so
+ExecStart=/usr/local/src/spyglass/run.py -ud -fh --fps=30 -r 1920x1080
+RestartSec=3
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
