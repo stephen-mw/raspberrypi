@@ -1,5 +1,7 @@
 ---
 - hosts: all
+  vars:
+    ROOT: "/etc/octoprint"
   become: yes
   tasks:
     - name: install packages
@@ -23,36 +25,38 @@
         path: /etc/hosts
         block: |
           127.0.0.1 octoprint octoprint.local
-#    - name: add octoprint user
-#      ansible.builtin.user:
-#        name: octoprint
-#        shell: /usr/sbin/nologin
-#        groups:
-#          - dialout
-#          - tty
-#          - video
-#        system: true
-#        create_home: true
-#        home: /etc/octoprint
-#    - name: Install octoprint pip
-#      ansible.builtin.pip:
-#        name: octoprint
-#        state: latest
+    - name: add octoprint user
+      ansible.builtin.user:
+        name: octoprint
+        shell: /usr/sbin/nologin
+        groups:
+          - dialout
+          - tty
+          - video
+        system: true
+        create_home: true
+        home: "{{ ROOT }}"
+    - name: Install octoprint pip
+      ansible.builtin.pip:
+        name: octoprint
+        state: latest
+      notify:
+        - restart octoprint service
     # This may not be necessary if restoring from a backup
-#    - name: create octoprint settings
-#      ansible.builtin.copy:
-#        src: config.yml
-#        dest: /etc/octoprint/config.yml
-#        owner: octoprint
-#        mode: '0644'
-#        directory_mode: 755
+    - name: create octoprint settings
+      ansible.builtin.copy:
+        src: config.yml
+        dest: "{{ ROOT }}/config.yml"
+        owner: octoprint
+        mode: '0644'
+        directory_mode: 755
     - name: setup spyglass
       script: setup_spyglass
       environment:
-        DESTINATION: "/usr/local/src/spyglass"
+        DESTINATION: "{{ ROOT }}/spyglass"
     # Start the webcam service
     - name: Copy webcam systemd service
-      ansible.builtin.copy:
+      ansible.builtin.template:
         src: webcam.systemd
         dest: /etc/systemd/system/webcam.service
         mode: '0440'
@@ -62,17 +66,22 @@
         state: started
         name: webcam
         enabled: yes
-#    # Start the service
-#    - name: Download octoprint systemd unit
-#      ansible.builtin.copy:
-#        src: service.systemd
-#        dest: /etc/systemd/system/octoprint.service
-#        mode: '0440'
-#    # Change from `restarted` to `started` if you're in the middle of a print
-#    # and don't want it to be interrupted
-#    - name: Start octoprint service
-#      ansible.builtin.systemd:
-#        daemon_reload: yes
-#        state: restarted
-#        name: octoprint
-#        enabled: yes
+    # Start the service
+    - name: Download octoprint systemd unit
+      ansible.builtin.template:
+        src: service.systemd
+        dest: /etc/systemd/system/octoprint.service
+        mode: '0440'
+    - name: start octoprint service
+      ansible.builtin.systemd:
+        daemon_reload: yes
+        state: started
+        name: octoprint
+        enabled: true
+  handlers:
+    - name: restart octoprint service
+      ansible.builtin.systemd:
+        daemon_reload: yes
+        state: restarted
+        name: octoprint
+        enabled: yes
