@@ -26,9 +26,10 @@
         service: "{{ item }}"
         permanent: true
         state: enabled
-      with_list:
+      loop:
         - http
         - https
+        - ntp
         - ssh
     - name: permit rtorrent
       ansible.posix.firewalld:

@@ -57,8 +57,26 @@
           - pigpio
           - rpi-update
           - sox
+          - watchdog
           - xinit
           - xserver-xorg
+    - name: setup watchdog
+      blockinfile:
+        dest: /etc/watchdog.conf
+        content: |
+          realtime		= yes
+          priority		= 1
+          watchdog-device = /dev/watchdog
+          watchdog-timeout = 15
+          max-load-1 = 24
+          interface = wlan0
+    # TODO this is not yet working
+    # https://github.com/RPi-Distro/repo/issues/237
+    - name: start watchdog
+      ansible.builtin.systemd:
+        name: watchdog
+        enabled: true
+        state: disabled
     - name: install wiring pi
       shell: |
         wget https://project-downloads.drogon.net/wiringpi-latest.deb

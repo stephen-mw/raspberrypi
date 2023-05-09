@@ -2,6 +2,14 @@
 - hosts: all
   become: yes
   tasks:
+    # Do this as soon as possible because it can cause http issues
+    - name: disable ipv6
+      ansible.posix.sysctl:
+        name: net.ipv6.conf.all.disable_ipv6
+        value: '1'
+        sysctl_set: true
+        state: present
+        reload: true
     - name: install packages
       apt:
         update_cache: true
@@ -12,6 +20,7 @@
           - fzf
           - git
           - lsof
+          - net-tools
           - python3-pip
           - python3-virtualenv
           - rng-tools
@@ -22,14 +31,21 @@
           - unp
           - vim
           - wget
-    - name: add github keys
-      blockinfile:
-        dest: /etc/ssh/ssh_known_hosts
-        content: |
-          # Github public keys added via ansible
-          github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
-          github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-          github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+    - name: add github known host key
+      ansible.builtin.known_hosts:
+        name: github.com
+        key: "{{ item }}"
+        path: /etc/ssh/ssh_known_hosts
+        state: present
+      loop:
+          - github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+          - github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+          - github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+    - name: Set authorized keys for smw
+      ansible.posix.authorized_key:
+        user: smw
+        state: present
+        key: https://github.com/stephen-mw.keys
     - name: remove apparmor
       apt:
         state: absent
@@ -48,7 +64,7 @@
       script: install_golang
       environment:
         ARCH: "{{ ansible_architecture }}"
-        VERSION: "1.20.2"
+        VERSION: "1.20.4"
     - name: Add sudo/adm group
       ansible.builtin.group:
         name: "{{ item }}"
@@ -75,20 +91,6 @@
         comment: Stephen Wood
         groups: sudo, adm
         shell: /bin/bash
-    - name: add github known host key
-      ansible.builtin.known_hosts:
-        name: github.com
-        key: github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
-        path: /etc/ssh/ssh_known_hosts
-        state: present
-    - name: add github to authorized_keys
-      run_once: true
-      shell: ssh-keyscan github.com >> /etc/ssh/ssh_known_hosts
-    - name: Set authorized keys for smw
-      ansible.posix.authorized_key:
-        user: smw
-        state: present
-        key: https://github.com/stephen-mw.keys
     - name: update smw keys
       shell: ssh-import-id -o ~smw/.ssh/authorized_keys gh:stephen-mw
       run_once: true
@@ -140,3 +142,10 @@
           X11Forwarding yes
           X11UseLocalhost no
           AddressFamily inet
+    - name: allow dmesg for all
+      ansible.posix.sysctl:
+        name: kernel.dmesg_restrict
+        value: '0'
+        sysctl_set: true
+        state: present
+        reload: true
