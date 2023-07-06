@@ -1,0 +1,63 @@
+# Ansible config script for opensprinkler pi
+# https://opensprinkler.com/
+---
+- hosts: all
+  vars:
+    ROOT: "/etc/ospi"
+  become: yes
+  tasks:
+    - name: install packages
+      apt:
+        update_cache: true
+        state: present
+        name:
+          - build-essential
+          - git
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: ospi
+        use: systemd
+    - name: Update /etc/hosts file
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          127.0.0.1 ospi ospi.local
+    - name: add ospi user
+      ansible.builtin.user:
+        name: ospi
+        shell: /usr/sbin/nologin
+        groups:
+          - gpio
+        system: true
+        create_home: true
+        home: "{{ ROOT }}"
+    - name: checkout OSPI software
+      ansible.builtin.git:
+        repo: 'https://github.com/OpenSprinkler/OpenSprinkler-Firmware.git'
+        dest: "{{ ROOT }}"
+        version: master
+        force: true
+    - name: build OSPI software
+      shell: |
+        set -euo pipefail
+        cd {{ ROOT }}
+        ./build.sh ospi
+      args:
+        executable: /bin/bash
+    - name: set OSPI directory permissions
+      file:
+        path: "{{ ROOT }}"
+        owner: ospi
+        recurse: true
+    # Copy the systemd file and start the service
+    - name: Create ospi systemd file
+      ansible.builtin.template:
+        src: ospi.service
+        dest: /etc/systemd/system/ospi.service
+        mode: '0444'
+    - name: start ospi service
+      ansible.builtin.systemd:
+        daemon_reload: yes
+        state: started
+        name: ospi
+        enabled: true

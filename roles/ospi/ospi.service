@@ -1,0 +1,13 @@
+[Unit]
+Description=securitypi
+
+[Service]
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+User=ospi
+WorkingDirectory={{ ROOT }}
+ExecStart={{ ROOT }}/OpenSprinkler
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
