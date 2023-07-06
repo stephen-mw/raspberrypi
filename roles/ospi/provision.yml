@@ -47,9 +47,13 @@
     - name: set OSPI directory permissions
       file:
         path: "{{ ROOT }}"
-        owner: ospi
+        owner: root
+        group: ospi
+        mode: u=rwX,g=rwX,o=
         recurse: true
-    # Set binary permission so it's only writeable by root
+    # Drop permission on the actual binary. This will overwrite what happened
+    # in the previous changes but necessary for security (the binary should
+    # never be able to update itself).
     - name: set OSPI binary permission
       file:
         path: "{{ ROOT }}/OpenSprinkler"
