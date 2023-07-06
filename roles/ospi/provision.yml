@@ -49,6 +49,12 @@
         path: "{{ ROOT }}"
         owner: ospi
         recurse: true
+    # Set binary permission so it's only writeable by root
+    - name: set OSPI binary permission
+      file:
+        path: "{{ ROOT }}/OpenSprinkler"
+        owner: ospi
+        mode: "0750"
     # Copy the systemd file and start the service
     - name: Create ospi systemd file
       ansible.builtin.template:
