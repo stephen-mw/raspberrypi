@@ -15,13 +15,13 @@
           - git
     - name: Set hostname
       ansible.builtin.hostname:
-        name: ospi
+        name: sprinkler
         use: systemd
     - name: Update /etc/hosts file
       blockinfile:
         path: /etc/hosts
         block: |
-          127.0.0.1 ospi ospi.local
+          127.0.0.1 sprinkler sprinkler.local
     - name: add ospi user
       ansible.builtin.user:
         name: ospi
