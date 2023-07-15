@@ -6,7 +6,7 @@ set -exuo pipefail
 # export ARCH="armv6l"
 
 # Support for 32 bit, 64 bit ARM, and 64bit intel
-if [[ "${ARCH}" == "armv7l" ]]; then
+if [[ "${ARCH}" == "armv7l" || "${ARCH}" == "armv6l" ]]; then
     ARCH="armv6l"
 elif [[ "${ARCH}" == "aarch64" ]]; then
     ARCH="arm64"

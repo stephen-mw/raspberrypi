@@ -7,7 +7,7 @@
         dest: /etc/apt/apt.conf.d/02mirror
         owner: root
         mode: 0644
-        content: 'Acquire::http::Proxy "http://cato.local:3142/";'
+        content: '#Acquire::http::Proxy "http://cato.local:3142/";'
     - name: set RPI hostname
       # This will make it so the dhcp-set hostname will take effect.
       run_once: true
@@ -76,7 +76,7 @@
       ansible.builtin.systemd:
         name: watchdog
         enabled: true
-        state: disabled
+        state: stopped
     - name: install wiring pi
       shell: |
         wget https://project-downloads.drogon.net/wiringpi-latest.deb
@@ -95,7 +95,7 @@
           - bluetooth
           - gpio
           - i2c
-          - pulse-access
+          #- pulse-access
           - sudo
     - name: Remove the default pi user
       user:
