@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Used to alert when i2c settings are wrong or cords get jiggled in the RPI
+
+EXPECTED=$(cat <<'HEREDOC'
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:                         -- -- -- -- -- -- -- --
+10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+30: -- -- -- -- -- -- -- -- 38 -- -- -- -- -- -- --
+40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+50: 50 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60: -- -- -- -- -- -- -- -- UU -- -- -- -- -- -- --
+70: -- -- -- -- -- -- -- --
+HEREDOC
+)
+
+EXPECTED=$(echo "$EXPECTED" | xargs)
+CURRENT=$(sudo i2cdetect -y 1)
+CURRENT=$(echo "$CURRENT" | xargs)
+
+if [[ "$CURRENT" != "$EXPECTED" ]]; then
+    echo "The current I2C bus does not match the expected output."
+    echo "Expected:"
+    echo "$EXPECTED"
+    echo "Current:"
+    echo "$CURRENT"
+    exit 1
+fi

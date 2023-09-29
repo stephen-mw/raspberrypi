@@ -11,13 +11,6 @@
           - pps-tools
     - name: compile gpsd
       script: compile_gpsd
-#    - name: set gpsd config
-#      copy:
-#        dest: /etc/default/gpsd
-#        content: |
-#          USBAUTO="true"
-#          DEVICES="/dev/ttyAMA0 /dev/pps0"
-#          GPSD_OPTIONS="-r -n -N -b"
     - name: set PYTHONPATH for xgps
       blockinfile:
         dest: /etc/bash.bashrc
@@ -43,3 +36,11 @@
       with_items:
         - gpsd
         - chrony
+    # i2c check file
+    - name: setup chrony service
+      copy:
+        src: i2c_check
+        dest: /usr/bin/i2c_check
+        mode: 0744
+        owner: root
+        group: root
