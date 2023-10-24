@@ -14,9 +14,9 @@
       copy:
         dest: /etc/hostname
         content: localhost
-    - name: add debian keys
-      run_once: true
-      shell: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 648ACFD622F3D138 0E98404D386FA1D9 605C66F00D6C9793 9165938D90FDDD2E
+#    - name: add debian keys
+#      run_once: true
+#      shell: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 648ACFD622F3D138 0E98404D386FA1D9 605C66F00D6C9793 9165938D90FDDD2E
 #    - name: Update apt sources
 #      copy:
 #        dest: /etc/apt/sources.list
@@ -32,10 +32,10 @@
 #          #deb http://mirror.u1f602.com/raspbian/ bullseye main contrib non-free rpi
 #          #deb-src http://mirror.u1f602.com/debian/ bullseye main
 #          #deb-src http://mirror.u1f602.com/raspbian/ bullseye main contrib non-free rpi
-    - name: Upgrade once to latest version
-      run_once: true
-      apt:
-        upgrade: dist
+#    - name: Upgrade once to latest version
+#      run_once: true
+#      apt:
+#        upgrade: dist
 #    - name: Remove old list
 #      ansible.builtin.file:
 #        path: /etc/apt/sources.list.d/raspi.list
@@ -57,7 +57,7 @@
           - pigpio
           - rpi-update
           - sox
-          - watchdog
+          - wiringpi
           - xinit
           - xserver-xorg
     - name: setup watchdog
@@ -77,11 +77,6 @@
         name: watchdog
         enabled: true
         state: stopped
-    - name: install wiring pi
-      shell: |
-        wget https://project-downloads.drogon.net/wiringpi-latest.deb
-        dpkg -i wiringpi-latest.deb
-        rm -r -- wiringpi-latest.deb
 # This currently breaks the pi's bluetooth
 #    - name: Upgrade RPI firmware
 #      run_once: true
