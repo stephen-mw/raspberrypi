@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+
+# Support for 32 bit, 64 bit ARM
+if [[ "${ARCH}" == "armv7l" || "${ARCH}" == "armv6l" ]]; then
+  ARCH="armhf"
+elif [[ "${ARCH}" == "aarch64" ]]; then
+  ARCH="arm64"
+else
+  echo "non-compatible architecture version: ${ARCH}"
+  exit 1
+fi
+
+export VERSION="wiringpi-2.61-1-${ARCH}.deb"
+
+if [[ $(dpkg -l wiringpi) ]]; then
+    echo "Wiring pi already installed"
+    exit
+fi
+
+cd /tmp
+wget https://github.com/WiringPi/WiringPi/releases/download/2.61-1/${VERSION}
+dpkg -i ${VERSION}
