@@ -9,16 +9,17 @@
         name:
           - chrony
           - pps-tools
-    - name: compile gpsd
-      script: compile_gpsd
+          - gpsd
+    #- name: compile gpsd
+    #  script: compile_gpsd
     - name: set PYTHONPATH for xgps
       blockinfile:
         dest: /etc/bash.bashrc
         content: "export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/dist-packages/"
-#    - name: setup chrony conf
-#      copy:
-#        src: ./chrony.conf
-#        dest: /etc/chrony/chrony.conf
+    - name: setup chrony conf
+      copy:
+        src: ./chrony.conf
+        dest: /etc/chrony/chrony.conf
     - name: setup chrony service
       copy:
         src: ./chrony.service
@@ -41,6 +42,6 @@
       copy:
         src: i2c_check
         dest: /usr/bin/i2c_check
-        mode: 0744
+        mode: 0755
         owner: root
         group: root

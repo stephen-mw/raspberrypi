@@ -57,26 +57,25 @@
           - pigpio
           - rpi-update
           - sox
-          - wiringpi
           - xinit
           - xserver-xorg
-    - name: setup watchdog
-      blockinfile:
-        dest: /etc/watchdog.conf
-        content: |
-          realtime		= yes
-          priority		= 1
-          watchdog-device = /dev/watchdog
-          watchdog-timeout = 15
-          max-load-1 = 24
-          interface = wlan0
+    #- name: setup watchdog
+    #  blockinfile:
+    #    dest: /etc/watchdog.conf
+    #    content: |
+    #      realtime		= yes
+    #      priority		= 1
+    #      watchdog-device = /dev/watchdog
+    #      watchdog-timeout = 15
+    #      max-load-1 = 24
+    #      interface = wlan0
     # TODO this is not yet working
     # https://github.com/RPi-Distro/repo/issues/237
-    - name: start watchdog
-      ansible.builtin.systemd:
-        name: watchdog
-        enabled: true
-        state: stopped
+    #- name: start watchdog
+    #  ansible.builtin.systemd:
+    #    name: watchdog
+    #    enabled: true
+    #    state: stopped
 # This currently breaks the pi's bluetooth
 #    - name: Upgrade RPI firmware
 #      run_once: true
@@ -164,7 +163,7 @@
       ansible.builtin.file:
         path: /etc/systemd/system/getty@tty1.service.d/autologin.conf
         state: absent
-    #- name: install wiring pi
-    #  script: install_wiringpi
-    #  environment:
-    #    ARCH: "{{ ansible_architecture }}"
+    - name: install wiring pi
+      script: install_wiringpi
+      environment:
+        ARCH: "{{ ansible_architecture }}"
