@@ -10,8 +10,8 @@
           - chrony
           - pps-tools
           - gpsd
-    #- name: compile gpsd
-    #  script: compile_gpsd
+    - name: compile gpsd
+      script: compile_gpsd
     - name: set PYTHONPATH for xgps
       blockinfile:
         dest: /etc/bash.bashrc
@@ -37,6 +37,22 @@
       with_items:
         - gpsd
         - chrony
+    - name: enable modules for ntp
+      copy:
+        dest: /etc/modules-load.d/ntp.server
+        content: |
+          pps-gpio
+          i2c-dev
+          rtc-ds1307
+    # setup i2c
+    - name: enable modules for ntp
+      blockinfile:
+        dest: /boot/config.txt
+        content: |
+          dtparam=watchdog=on
+          dtoverlay=pps-gpio,gpiopin=18
+          dtparam=i2c1=on
+          dtoverlay=i2c-rtc,ds1307
     # i2c check file
     - name: setup chrony service
       copy:

@@ -40,6 +40,7 @@
       ansible.builtin.pip:
         name: octoprint
         state: latest
+        extra_args: "--break-system-packages"
       notify:
         - restart octoprint service
     # This may not be necessary if restoring from a backup

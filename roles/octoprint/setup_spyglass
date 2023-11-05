@@ -10,5 +10,5 @@ fi
 
 cd ${DESTINATION}
 git pull
-
-pip install -e .
+pip install -r requirements.txt --break-system-packages
+pip install -e . --break-system-packages

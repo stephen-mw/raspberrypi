@@ -118,7 +118,11 @@
         block: |
           [all]
           dtparam=watchdog=on
-          dtparam=i2c_arm=on
+          dtparam=i2c1=on
+    - name: load i2c in modules
+      blockinfile:
+        dest: /etc/modules-load.d/modules.conf
+        content: i2c-dev
     - name: Enable systemd watchdog
       blockinfile:
         path: /etc/systemd/system.conf
