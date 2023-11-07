@@ -59,6 +59,7 @@
           - sox
           - xinit
           - xserver-xorg
+          - wiringpi
     #- name: setup watchdog
     #  blockinfile:
     #    dest: /etc/watchdog.conf
@@ -113,12 +114,11 @@
         block: |
           HRNGDEVICE=/dev/hwrng
     - name: Setup boot.txt
-      blockinfile:
-        path: /boot/config.txt
-        block: |
+      lineinfile:
+        dest: /boot/config.txt
+        line: |
           [all]
           dtparam=watchdog=on
-          dtparam=i2c1=on
     - name: load i2c in modules
       blockinfile:
         dest: /etc/modules-load.d/modules.conf
@@ -167,7 +167,7 @@
       ansible.builtin.file:
         path: /etc/systemd/system/getty@tty1.service.d/autologin.conf
         state: absent
-    - name: install wiring pi
-      script: install_wiringpi
-      environment:
-        ARCH: "{{ ansible_architecture }}"
+#    - name: install wiring pi
+#      script: install_wiringpi
+#      environment:
+#        ARCH: "{{ ansible_architecture }}"
