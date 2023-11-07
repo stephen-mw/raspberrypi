@@ -29,14 +29,6 @@
         src: ./gpsd.service
         dest: /etc/systemd/system/gpsd.service
         mode: 0644
-    - name: start gpsd
-      ansible.builtin.systemd:
-        name: "{{ item }}"
-        enabled: true
-        state: started
-      with_items:
-        - gpsd
-        - chrony
     - name: enable modules for ntp
       copy:
         dest: /etc/modules-load.d/ntp.server
@@ -44,7 +36,7 @@
           pps-gpio
           i2c-dev
           rtc-ds1307
-    # setup i2c
+    # setup i2c, serial, and rtc
     - name: enable modules for ntp
       blockinfile:
         dest: /boot/config.txt
@@ -53,6 +45,12 @@
           dtoverlay=pps-gpio,gpiopin=18
           dtparam=i2c1=on
           dtoverlay=i2c-rtc,ds1307
+          enable_uart=1
+    # This is the correct serial port for debian bookworm+
+    - name: setup gpsd options
+      blockinfile:
+        dest: /etc/default/gpsd
+        content: DEVICES="/dev/serial0"
     # i2c check file
     - name: setup chrony service
       copy:
@@ -61,3 +59,11 @@
         mode: 0755
         owner: root
         group: root
+    - name: start gpsd
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: true
+        state: started
+      with_items:
+        - gpsd
+        - chrony

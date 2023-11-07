@@ -59,7 +59,6 @@
           - sox
           - xinit
           - xserver-xorg
-          - wiringpi
     #- name: setup watchdog
     #  blockinfile:
     #    dest: /etc/watchdog.conf
@@ -167,7 +166,7 @@
       ansible.builtin.file:
         path: /etc/systemd/system/getty@tty1.service.d/autologin.conf
         state: absent
-#    - name: install wiring pi
-#      script: install_wiringpi
-#      environment:
-#        ARCH: "{{ ansible_architecture }}"
+    - name: install wiring pi
+      script: install_wiringpi
+      environment:
+        ARCH: "{{ ansible_architecture }}"
