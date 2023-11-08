@@ -2,6 +2,8 @@
 set -euo pipefail
 
 
+export VERSION="2.61-1"
+
 # Support for 32 bit, 64 bit ARM
 if [[ "${ARCH}" == "armv7l" || "${ARCH}" == "armv6l" ]]; then
   ARCH="armhf"
@@ -12,13 +14,14 @@ else
   exit 1
 fi
 
-export VERSION="wiringpi-2.61-1-${ARCH}.deb"
-
 if [[ $(dpkg -l wiringpi) ]]; then
     echo "Wiring pi already installed"
     exit
 fi
 
 cd /tmp
-wget https://github.com/WiringPi/WiringPi/releases/download/2.61-1/${VERSION}
-dpkg -i ${VERSION}
+export FILE_URI="https://github.com/WiringPi/WiringPi/releases/download/${VERSION}/wiringpi-${VERSION}-${ARCH}.deb"
+
+echo "Downloading ${FILE_URI}"
+wget "${FILE_URI}"
+dpkg -i wiringpi-${VERSION}-${ARCH}.deb

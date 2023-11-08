@@ -113,9 +113,10 @@
         block: |
           HRNGDEVICE=/dev/hwrng
     - name: Setup boot.txt
-      lineinfile:
+      blockinfile:
         dest: /boot/config.txt
-        line: |
+        marker: "rpi.yml block"
+        block: |
           [all]
           dtparam=watchdog=on
     - name: load i2c in modules
@@ -131,6 +132,10 @@
           ShutdownWatchdogSec=10min
           RebootWatchdogSec=10min
           WatchdogDevice=/dev/watchdog
+    - name: disable swap
+      ansible.builtin.systemd:
+        masked: true
+        name: dphys-swapfile
 #    - name: setup unattended upgrades
 #      apt:
 #        state: present
