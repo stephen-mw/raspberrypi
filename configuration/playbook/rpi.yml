@@ -115,7 +115,7 @@
     - name: Setup boot.txt
       blockinfile:
         dest: /boot/config.txt
-        marker: "rpi.yml block"
+        marker: "### rpi.yml ansible block ###"
         block: |
           [all]
           dtparam=watchdog=on

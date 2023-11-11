@@ -8,14 +8,24 @@
         state: present
         name:
           - chrony
-          - pps-tools
           - gpsd
+          - pps-tools
+          - unp
+          # These are necessary for gpsd-clients compilation
+          - python-gi-cairo
+          - python-gi
+    - name: install python pip
+      pip:
+        name:
+          - gps
+          - pyserial
+        extra_args: '--break-system-packages'
     - name: compile gpsd
       script: compile_gpsd
     - name: set PYTHONPATH for xgps
       blockinfile:
         dest: /etc/bash.bashrc
-        content: "export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/dist-packages/"
+        content: "export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python3/dist-packages"
     - name: setup chrony conf
       copy:
         src: ./chrony.conf
@@ -29,6 +39,10 @@
         src: ./gpsd.service
         dest: /etc/systemd/system/gpsd.service
         mode: 0644
+    - name: Mask serial-getty@ttyAMA0
+      ansible.builtin.systemd:
+        name: serial-getty@ttyAMA0
+        masked: true
     - name: enable modules for ntp
       copy:
         dest: /etc/modules-load.d/ntp.server
@@ -40,17 +54,47 @@
     - name: enable modules for ntp
       blockinfile:
         dest: /boot/config.txt
+        marker: "#### NTP #####"
         content: |
-          dtparam=watchdog=on
+          [all]
           dtoverlay=pps-gpio,gpiopin=18
           dtparam=i2c1=on
           dtoverlay=i2c-rtc,ds1307
           enable_uart=1
-    # This is the correct serial port for debian bookworm+
-    - name: setup gpsd options
+          dtoverlay=pi3-disable-bt
+    # Disable the old fake hwclock stuff
+    - name: Remove fakehwclock package
+      ansible.builtin.apt:
+        name: fake-hwclock
+        state: absent
+    - name: Disable old hwclock-set udev rule
+      ansible.builtin.file:
+        dest: /lib/udev/hwclock-set
+        state: absent
+    - name: stop fake hwclock
+      ansible.builtin.systemd:
+        name: fake-hwclock
+        masked: true
+    - name: Update hwclock every hour
+      copy:
+        dest:  /etc/cron.hourly/hwclock
+        content: |
+          #!/bin/bash
+          # Update the real hwclock every hour
+          set -euo pipefail
+          /usr/sbin/hwclock --systohc
+        mode: 0744
+    # Stop serial from trying to restart pi
+    - name: stop serial restart
       blockinfile:
-        dest: /etc/default/gpsd
-        content: DEVICES="/dev/serial0"
+        dest: /etc/sysctl.conf
+        marker: "#### NTP #####"
+        content: kernel.sysrq=0
+    - name: Stop console from using serial
+      replace:
+        path: /boot/cmdline.txt
+        regexp: 'console=serial0,115200 console=tty1 '
+        replace: ''
     # i2c check file
     - name: setup chrony service
       copy:
@@ -67,3 +111,7 @@
       with_items:
         - gpsd
         - chrony
+
+# You might need to put the gps in nmea mode if you want to read the sentences.
+# After the service is running:
+# sudo gpsctl -n /dev/ttyAMA0
