@@ -57,9 +57,14 @@
         marker: "#### NTP #####"
         content: |
           [all]
+          # Enable the system watchdog
+          dtparam=watchdog=on
+          # Set the pps pin
           dtoverlay=pps-gpio,gpiopin=18
+          # Enable i2c1 and hardware clock
           dtparam=i2c1=on
           dtoverlay=i2c-rtc,ds1307
+          # Enable serial and disable bluetooth since it interferes with serial
           enable_uart=1
           dtoverlay=pi3-disable-bt
     # Disable the old fake hwclock stuff
