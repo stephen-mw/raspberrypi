@@ -34,6 +34,10 @@
       ansible.builtin.systemd:
         name: serial-getty@ttyAMA0
         masked: true
+    - name: Mask gpsd.socket
+      ansible.builtin.systemd:
+        name: gpsd.socket
+        masked: true
     - name: enable modules for ntp
       copy:
         dest: /etc/modules-load.d/ntp.server
@@ -45,7 +49,9 @@
     - name: enable modules for ntp
       blockinfile:
         dest: /boot/config.txt
-        marker: "#### NTP #####"
+        marker: "#### {mark} NTP #####"
+        marker_begin: "START"
+        marker_end: "END"
         content: |
           [all]
           # Enable the system watchdog
@@ -57,8 +63,10 @@
           dtoverlay=i2c-rtc,ds1307
           # Enable serial and disable bluetooth since it interferes with serial
           enable_uart=1
+          # For raspberry pi 4+
           dtoverlay=disable-bt
-          # On RPI3 you might need dtoverlay=pi3-disable-bt
+          # On RPI3
+          dtoverlay=pi3-disable-bt
     # Disable the old fake hwclock stuff
     - name: Remove fakehwclock package
       ansible.builtin.apt:

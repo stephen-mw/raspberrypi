@@ -3,6 +3,8 @@ This is the ansible script you can use to provision a raspberry pi as a high-acc
 
 Your raspberry pi will automatically set time based on GPS satellites and can keep very accurate time with the PPS output from the receiver.
 
+These scripts will also install chrony so that the time can be served on your home network or as part of the ntppool.org project.
+
 Requirements:
 1. Raspberry pi model 3 or above
 2. Serial GPS device such as a cheap ublox 6m with pps output
@@ -26,3 +28,5 @@ Put the receiver into NMEA sentence mode
 ```
 gpsctl -n /dev/ttyAMA0
 ```
+
+Additional configuration options can be explored via [ubxtool](https://gpsd.io/ubxtool-examples.html) but the default settings are sufficient for an NTP server.
