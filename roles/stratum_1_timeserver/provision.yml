@@ -11,15 +11,6 @@
           - gpsd
           - pps-tools
           - unp
-          # These are necessary for gpsd-clients compilation
-          - python-gi-cairo
-          - python-gi
-    - name: install python pip
-      pip:
-        name:
-          - gps
-          - pyserial
-        extra_args: '--break-system-packages'
     - name: compile gpsd
       script: compile_gpsd
     - name: set PYTHONPATH for xgps
@@ -120,3 +111,5 @@
 # You might need to put the gps in nmea mode if you want to read the sentences.
 # After the service is running:
 # sudo gpsctl -n /dev/ttyAMA0
+#
+# Also consider adding `nohz=off` to /boot/cmdline.txt for better NTP latencies.

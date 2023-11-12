@@ -1,6 +1,5 @@
 [Unit]
 Description=GPS daemon
-Requires=dev-ttyS0.device
 
 [Service]
 User=root
