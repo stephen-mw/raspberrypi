@@ -1,9 +1,10 @@
 [Unit]
-Description=GPS daemon
+Description=GPS daemon for Raspberry Pi
+BindsTo=dev-ttyAMA0.device
+After=dev-ttyAMA0.device
 
 [Service]
-User=root
-ExecStart=/usr/local/sbin/gpsd -N -n -F /var/run/gpsd.sock /dev/ttyAMA0
+ExecStart=/usr/local/sbin/gpsd -F /var/run/gpsd.sock -N -n /dev/ttyAMA0
 Restart=on-failure
 
 [Install]

@@ -57,7 +57,8 @@
           dtoverlay=i2c-rtc,ds1307
           # Enable serial and disable bluetooth since it interferes with serial
           enable_uart=1
-          dtoverlay=pi3-disable-bt
+          dtoverlay=disable-bt
+          # On RPI3 you might need dtoverlay=pi3-disable-bt
     # Disable the old fake hwclock stuff
     - name: Remove fakehwclock package
       ansible.builtin.apt:
