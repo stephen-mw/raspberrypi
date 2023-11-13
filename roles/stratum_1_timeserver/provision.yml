@@ -8,7 +8,6 @@
         state: present
         name:
           - chrony
-          - gpsd
           - pps-tools
           - unp
     - name: compile gpsd
@@ -64,7 +63,7 @@
           # Enable serial and disable bluetooth since it interferes with serial
           enable_uart=1
           # For raspberry pi 4+
-          dtoverlay=disable-bt
+          #dtoverlay=disable-bt
           # On RPI3
           dtoverlay=pi3-disable-bt
     # Disable the old fake hwclock stuff

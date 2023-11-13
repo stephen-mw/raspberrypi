@@ -4,7 +4,7 @@ BindsTo=dev-ttyAMA0.device
 After=dev-ttyAMA0.device
 
 [Service]
-ExecStart=/usr/local/sbin/gpsd -F /var/run/gpsd.sock -N -n /dev/ttyAMA0
+ExecStart=/usr/local/sbin/gpsd -F /var/run/gpsd.sock -N -n /dev/ttyAMA0 /dev/pps0
 Restart=on-failure
 
 [Install]
