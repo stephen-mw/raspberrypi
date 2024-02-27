@@ -9,6 +9,10 @@
         system: yes
         home: /etc/kiwix
         create_home: true
+    - name: download binary
+      script: install_kiwix
+      environment:
+        BIN_DIR: "/usr/local/bin"
     - name: setup systemd service
       copy:
         dest: /etc/systemd/system/kiwix.service
@@ -18,7 +22,7 @@
 
           [Service]
           User=kiwix
-          ExecStart=bash -c '/etc/kiwix/kiwix-serve -p 8080 /etc/kiwix/library/*'
+          ExecStart=bash -c '/usr/local/bin/kiwix-serve -p 8080 /etc/kiwix/library/*'
           Restart=on-failure
 
           [Install]

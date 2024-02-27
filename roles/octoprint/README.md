@@ -16,3 +16,11 @@
 * ...from file > Browse > and select .hexfile
 * click Flash from file - and wait ...
 * Done - check firmware again on your printer under Menu > support
+
+## Setting up the webcam
+The ansible script will install the spyglass software and start the webcam systemd process.
+
+You need to go into the settings and add the following streams changing the URL to your raspberry pi:
+
+- http://octoprint.local:8080/stream
+- http://octoprint.local:8080/snapshot

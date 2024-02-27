@@ -2,6 +2,7 @@
 - hosts: all
   vars:
     ROOT: "/etc/octoprint"
+    VENV: "{{ ROOT }}/venv"
   become: yes
   tasks:
     - name: install packages
@@ -36,11 +37,19 @@
         system: true
         create_home: true
         home: "{{ ROOT }}"
+    # Octoprint makes a lot of assumptions about where it's running and doesn't
+    # like running out of a home directory. We're going to force it to do that
+    # anyway.
+    - name: setup virtualenv
+      script: setup_virtualenv
+      environment:
+        ROOT: "{{ ROOT }}"
     - name: Install octoprint pip
       ansible.builtin.pip:
         name: octoprint
         state: latest
         extra_args: "--break-system-packages"
+        virtualenv: "{{ VENV }}"
       notify:
         - restart octoprint service
     # This may not be necessary if restoring from a backup
@@ -54,7 +63,7 @@
     - name: setup spyglass
       script: setup_spyglass
       environment:
-        DESTINATION: "{{ ROOT }}/spyglass"
+        DESTINATION: "/usr/local/src/spyglass"
     # Start the webcam service
     - name: Copy webcam systemd service
       ansible.builtin.template:
@@ -67,6 +76,12 @@
         state: started
         name: webcam
         enabled: yes
+    - name: set directory permissions
+      file:
+        path: "{{ ROOT }}"
+        owner: octoprint
+        recurse: True
+        group: octoprint
     # Start the service
     - name: Download octoprint systemd unit
       ansible.builtin.template:

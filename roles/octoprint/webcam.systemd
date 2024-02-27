@@ -3,7 +3,7 @@ Description=Start RPI webcam for octoprint
 
 [Service]
 # ROOT is configured via ansible
-ExecStart={{ ROOT }}/spyglass/run.py -ud -fh --fps=30 -r 1920x1080
+ExecStart=/usr/local/src/spyglass/run.py -ud -fh --fps=30 -r 1920x1080
 RestartSec=3
 Restart=always
 
