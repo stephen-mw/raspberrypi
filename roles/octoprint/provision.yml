@@ -10,6 +10,7 @@
         update_cache: true
         state: present
         name:
+          - avrdude # used for flashing
           - libcamera-apps-lite
           - prusa-slicer  # Only needed for updating firmware
           - python3-opengl
@@ -101,3 +102,4 @@
         state: restarted
         name: octoprint
         enabled: yes
+
