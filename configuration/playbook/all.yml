@@ -32,6 +32,7 @@
           - fzf
           - git
           - lsof
+          - mosh
           - net-tools
           - python3-pip
           - python3-virtualenv
@@ -64,15 +65,15 @@
         state: absent
     - name: install python packages
       pip:
+        extra_args: '--break-system-packages'
         name:
           - black
           - isort
-        extra_args: '--break-system-packages'
     - name: install golang
       script: install_golang
       environment:
         ARCH: "{{ ansible_architecture }}"
-        VERSION: "1.20.7"
+        VERSION: "1.23.0"
     - name: Add sudo/adm group
       ansible.builtin.group:
         name: "{{ item }}"
@@ -133,21 +134,23 @@
           @restart smw /usr/bin/ssh-import-id gh:stephen-mw
     - name: lock down sshd
       copy:
-        dest: /etc/ssh/sshd_config.config
+        dest: /etc/ssh/sshd_config.d/00cato.conf
         owner: root
         mode: 0644
         content: |
-          Include /etc/ssh/sshd_config.d/*.conf
           AllowUsers smw
           PasswordAuthentication no
           UseDNS no
           X11Forwarding yes
           X11UseLocalhost no
           AddressFamily inet
-    - name: allow dmesg for all
-      ansible.posix.sysctl:
-        name: kernel.dmesg_restrict
-        value: '0'
-        sysctl_set: true
-        state: present
-        reload: true
+    - name: Configure sysctl settings
+      copy:
+        dest: /etc/sysctl.d/00cato.conf
+        mode: 0644
+        owner: root
+        content: |
+          net.ipv6.conf.all.disable_ipv6 = 1
+          net.ipv6.conf.default.disable_ipv6 = 1
+          # Enable dmesg for all users
+          kernel.dmesg_restrict = 0
