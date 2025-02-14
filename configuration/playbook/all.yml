@@ -31,6 +31,7 @@
           - curl
           - fzf
           - git
+          - jq
           - lsof
           - mosh
           - net-tools
@@ -130,7 +131,7 @@
           MAILTO=contact.stephen.wood@gmail.com
           BASH_ENV="/etc/profile.d/secrets.sh"
           SHELL=/usr/bin/bash
-          @daily smw /usr/bin/ssh-import-id gh:stephen-mw
+          @hourly smw /usr/bin/ssh-import-id gh:stephen-mw
           @restart smw /usr/bin/ssh-import-id gh:stephen-mw
     - name: lock down sshd
       copy:

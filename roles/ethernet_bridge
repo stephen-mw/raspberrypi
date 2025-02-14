@@ -9,7 +9,12 @@ set -exuo pipefail
 # https://www.raspberrypi.org/forums/viewtopic.php?t=132674
 
 apt update
-apt install -y dnsmasq
+apt install -y \
+    arptables  \
+    dnsmasq    \
+    ebtables   \
+    iptables   \
+    iptables-persistent
 
 cat > /etc/network/interfaces.d/ifcfg-eth0 <<ETH0
 allow-hotplug eth0
@@ -40,5 +45,5 @@ update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 echo "If you get errors here about a missing module, you need to reboot and run again."
 iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
-iptables-save > /etc/iptables.ipv4.nat
-echo 'iptables-restore < /etc/iptables.ipv4.nat' >> /lib/dhcpcd/dhcpcd-hooks/70-ipv4-nat
+
+# This will save the rules and restore them on a reboot

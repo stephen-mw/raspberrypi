@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -d ${ROOT}/venv ]]; then
+    echo "Octoprint virtualenv already exists!"
+    exit 0
+fi
+
+cd ${ROOT}
+python -m virtualenv venv

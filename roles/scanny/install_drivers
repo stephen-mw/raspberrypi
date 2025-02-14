@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -d "/usr/local/src/linux-UFRII-drv-v570-us" ]]; then
+    echo "Drivers already present. Refusing to install."
+    exit
+fi
+
+# Sanity check that env variable set by ansible
+echo "Using drivers located at ${DRIVERS}"
+
+cd /usr/local/src
+tar xvf linux-UFRII-drv-v570-us-18.tar.gz
+cd linux-UFRII-drv-v570-us
+yes | sudo bash ./install.sh

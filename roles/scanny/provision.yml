@@ -1,0 +1,47 @@
+---
+- name: scanner playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: 'scanny'
+    - name: install packages
+      apt:
+        update_cache: true
+        state: present
+        name:
+          - cups
+          - libsane1
+          - libcups2
+          - printer-driver-gutenprint
+          - sane
+          - sane-utils
+    - name: setup canon printer drivers
+      ansible.builtin.copy:
+        src: linux-UFRII-drv-v570-us-18.tar.gz
+        dest: /usr/local/src/
+    # This will exit code failure the first time
+    - name: install drivers
+      script: install_drivers
+      environment:
+        DRIVERS: "linux-UFRII-drv-v570-us-18"
+    - name: create user
+      ansible.builtin.user:
+        name: scanny
+        shell: /usr/sbin/nologin
+        system: yes
+        group:
+          - lp
+          - lpadmin
+        password: '$6$97a6f$MIw8LxJpwTsbAtQ4QcnoPVYPyO/X/j2ht6EnSAXDsGTC1OKb2Wl8Faz570q9WBuRWf2SDlNkeufmkKv/031CO0'
+        createhome: yes
+        home: /etc/scanny
+    - name: Allow anyone to print
+      command: cupsctl --remote-any
+    - name: Make sure scanny user can modify/admin CUPS
+      replace:
+        path: /etc/cups/cupsd.conf
+        regexp: '^    Require user @SYSTEM'
+        replace: '    Require user @SYSTEM scanny'
+
