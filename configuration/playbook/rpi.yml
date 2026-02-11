@@ -14,32 +14,6 @@
       copy:
         dest: /etc/hostname
         content: localhost
-#    - name: add debian keys
-#      run_once: true
-#      shell: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 648ACFD622F3D138 0E98404D386FA1D9 605C66F00D6C9793 9165938D90FDDD2E
-#    - name: Update apt sources
-#      copy:
-#        dest: /etc/apt/sources.list
-#        content: |
-#          # Old mirrors
-#          deb http://raspbian.raspberrypi.org/raspbian/ bullseye main contrib non-free rpi
-#          #deb-src http://raspbian.raspberrypi.org/raspbian/ bullseye main contrib non-free rpi
-#          deb http://archive.raspberrypi.org/debian/ bullseye main
-#          #deb-src http://archive.raspberrypi.org/debian/ bullseye main
-#
-#          # Local mirrors
-#          #deb http://mirror.u1f602.com/debian/ bullseye main
-#          #deb http://mirror.u1f602.com/raspbian/ bullseye main contrib non-free rpi
-#          #deb-src http://mirror.u1f602.com/debian/ bullseye main
-#          #deb-src http://mirror.u1f602.com/raspbian/ bullseye main contrib non-free rpi
-#    - name: Upgrade once to latest version
-#      run_once: true
-#      apt:
-#        upgrade: dist
-#    - name: Remove old list
-#      ansible.builtin.file:
-#        path: /etc/apt/sources.list.d/raspi.list
-#        state: absent
     - name: remove piwiz
       apt:
         state: absent
@@ -54,32 +28,26 @@
           - i2c-tools
           - libsox-fmt-mp3
           - pavucontrol
-          - pigpio
           - rpi-update
           - sox
+          - watchdog
           - xinit
           - xserver-xorg
-    #- name: setup watchdog
-    #  blockinfile:
-    #    dest: /etc/watchdog.conf
-    #    content: |
-    #      realtime		= yes
-    #      priority		= 1
-    #      watchdog-device = /dev/watchdog
-    #      watchdog-timeout = 15
-    #      max-load-1 = 24
-    #      interface = wlan0
-    # TODO this is not yet working
-    # https://github.com/RPi-Distro/repo/issues/237
-    #- name: start watchdog
-    #  ansible.builtin.systemd:
-    #    name: watchdog
-    #    enabled: true
-    #    state: stopped
-# This currently breaks the pi's bluetooth
-#    - name: Upgrade RPI firmware
-#      run_once: true
-#      shell: yes | rpi-update || true
+    - name: setup watchdog
+      blockinfile:
+        dest: /etc/watchdog.conf
+        content: |
+          realtime		= yes
+          priority		= 1
+          watchdog-device = /dev/watchdog
+          watchdog-timeout = 15
+          max-load-1 = 24
+          interface = wlan0
+    - name: start watchdog
+      ansible.builtin.systemd:
+        name: watchdog
+        enabled: true
+        state: stopped
     - name: setup swood to updated groups
       user:
         name: smw
@@ -87,9 +55,7 @@
         groups:
           - adm
           - bluetooth
-          - gpio
           - i2c
-          #- pulse-access
           - sudo
     - name: Remove the default pi user
       user:
@@ -136,32 +102,32 @@
       ansible.builtin.systemd:
         masked: true
         name: dphys-swapfile
-#    - name: setup unattended upgrades
-#      apt:
-#        state: present
-#        name:
-#          - apt-listchanges
-#          - bsd-mailx
-#          - unattended-upgrades
-#    - name: setup /etc/apt/apt.conf.d/50unattended-upgrades
-#      copy:
-#        dest: /etc/apt/apt.conf.d/50unattended-upgrades
-#        content: |
-#          Unattended-Upgrade::Mail "contact.stephen.wood@gmail.com";
-#          Unattended-Upgrade::Automatic-Reboot "true";
-#          Unattended-Upgrade::Automatic-Reboot-Time "14:00";
-#    - name: setup /etc/apt/apt.conf.d/20auto-upgrades
-#      copy:
-#        dest: /etc/apt/apt.conf.d/20auto-upgrades
-#        content: |
-#          APT::Periodic::Update-Package-Lists "1";
-#          APT::Periodic::Download-Upgradeable-Packages "1";
-#          APT::Periodic::Unattended-Upgrade "1";
-#          APT::Periodic::Verbose "1";
-#          APT::Periodic::AutocleanInterval "7";
-#    - name: enable unattended upgrades
-#      run_once: true
-#      shell: "dpkg-reconfigure --priority=low unattended-upgrades -fnoninteractive"
+    - name: setup unattended upgrades
+      apt:
+        state: present
+        name:
+          - apt-listchanges
+          - bsd-mailx
+          - unattended-upgrades
+    - name: setup /etc/apt/apt.conf.d/50unattended-upgrades
+      copy:
+        dest: /etc/apt/apt.conf.d/50unattended-upgrades
+        content: |
+          Unattended-Upgrade::Mail "contact.stephen.wood@gmail.com";
+          Unattended-Upgrade::Automatic-Reboot "true";
+          Unattended-Upgrade::Automatic-Reboot-Time "14:00";
+    - name: setup /etc/apt/apt.conf.d/20auto-upgrades
+      copy:
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Download-Upgradeable-Packages "1";
+          APT::Periodic::Unattended-Upgrade "1";
+          APT::Periodic::Verbose "1";
+          APT::Periodic::AutocleanInterval "7";
+    - name: enable unattended upgrades
+      run_once: true
+      shell: "dpkg-reconfigure --priority=low unattended-upgrades -fnoninteractive"
     - name: remove pi user
       user:
         name: pi
@@ -174,4 +140,4 @@
     - name: install wiring pi
       script: install_wiringpi
       environment:
-        ARCH: "{{ ansible_architecture }}"
+        ARCH: "{{ ansible_facts['architecture'] }}"

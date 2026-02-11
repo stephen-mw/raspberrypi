@@ -40,7 +40,6 @@
           - rng-tools
           - rsyslog
           - screen
-          - software-properties-common
           - ssh-import-id
           - unp
           - vim
