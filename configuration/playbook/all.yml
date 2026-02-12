@@ -72,8 +72,8 @@
     - name: install golang
       script: install_golang
       environment:
-        ARCH: "{{ ansible_architecture }}"
-        VERSION: "1.23.0"
+        ARCH: "{{ ansible_facts['architecture'] }}"
+        VERSION: "1.26.0"
     - name: Add sudo/adm group
       ansible.builtin.group:
         name: "{{ item }}"
