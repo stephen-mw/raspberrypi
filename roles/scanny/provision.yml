@@ -31,10 +31,10 @@
         name: scanny
         shell: /usr/sbin/nologin
         system: yes
-        group:
+        groups:
           - lp
           - lpadmin
-        password: '$6$97a6f$MIw8LxJpwTsbAtQ4QcnoPVYPyO/X/j2ht6EnSAXDsGTC1OKb2Wl8Faz570q9WBuRWf2SDlNkeufmkKv/031CO0'
+        password: "{{ scanny_password }}"
         createhome: yes
         home: /etc/scanny
     - name: Allow anyone to print
@@ -44,4 +44,34 @@
         path: /etc/cups/cupsd.conf
         regexp: '^    Require user @SYSTEM'
         replace: '    Require user @SYSTEM scanny'
-
+    - name: Add scan command script
+      copy:
+        dest: /usr/local/bin/scan
+        content: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          # If it says "device busy" you need to set scan / remote scan on the printer
+          sudo scanimage -d "pixma:04A92775_1128L3600730" --resolution=75 --format=png > "$(date +%s).png"
+        mode: '0770'
+        owner: root
+        group: smw
+    - name: Customize CUPS configuration
+      blockinfile:
+        path: /etc/cups/cupsd.conf
+        block: |
+          <Location />
+            Order allow,deny
+            Allow from 10.10.10.0/24
+          </Location>
+    - name: add caddy config
+      copy:
+        dest: /etc/caddy/Caddyfile
+        content: |
+            :80 {
+              reverse_proxy localhost:631
+            }
+            # Refer to the Caddy docs for more information:
+            # https://caddyserver.com/docs/caddyfile
+        owner: root
+        group: caddy
+        mode: 640

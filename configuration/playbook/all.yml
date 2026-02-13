@@ -69,6 +69,7 @@
         name:
           - black
           - isort
+          - uv
     - name: install golang
       script: install_golang
       environment:
