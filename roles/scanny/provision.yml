@@ -15,7 +15,6 @@
           - libsane1
           - libcups2
           - printer-driver-gutenprint
-          - sane
           - sane-utils
     - name: setup canon printer drivers
       ansible.builtin.copy:
@@ -55,23 +54,31 @@
         mode: '0770'
         owner: root
         group: smw
-    - name: Customize CUPS configuration
-      blockinfile:
+    - name: Restrict CUPS access to local subnet
+      replace:
         path: /etc/cups/cupsd.conf
-        block: |
-          <Location />
-            Order allow,deny
-            Allow from 10.10.10.0/24
-          </Location>
-    - name: add caddy config
-      copy:
-        dest: /etc/caddy/Caddyfile
-        content: |
-            :80 {
-              reverse_proxy localhost:631
-            }
-            # Refer to the Caddy docs for more information:
-            # https://caddyserver.com/docs/caddyfile
-        owner: root
-        group: caddy
-        mode: 640
+        regexp: 'Allow all'
+        replace: 'Allow from 10.10.10.0/24'
+    - name: Set CUPS to listen on port 80
+      lineinfile:
+        path: /etc/cups/cupsd.conf
+        regexp: '^Port 631'
+        line: 'Port 80'
+    - name: Enable CUPS web interface
+      lineinfile:
+        path: /etc/cups/cupsd.conf
+        regexp: '^WebInterface'
+        line: 'WebInterface Yes'
+    - name: Enable CUPS browsing
+      lineinfile:
+        path: /etc/cups/cupsd.conf
+        regexp: '^Browsing'
+        line: 'Browsing Yes'
+    - name: Add D530 printer
+      command: lpadmin -p D530 -E -v "usb://Canon/D530/D560?serial=1128L3600730&interface=1" -m "canonufr2-drv:0/cnd530.ppd"
+      args:
+        creates: /etc/cups/ppd/D530.ppd
+    - name: Share D530 printer
+      command: lpadmin -p D530 -o printer-is-shared=true
+    - name: Set default paper size to Letter
+      command: lpadmin -p D530 -o PageSize=Letter

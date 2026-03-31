@@ -9,5 +9,5 @@ fi
 
 cd ${DESTINATION}
 git pull
-pip install -r requirements.txt --break-system-packages
+pip install -r requirements.txt --break-system-packages --ignore-installed
 pip install -e . --break-system-packages

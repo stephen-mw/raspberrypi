@@ -12,4 +12,4 @@ echo "Using drivers located at ${DRIVERS}"
 cd /usr/local/src
 tar xvf linux-UFRII-drv-v570-us-18.tar.gz
 cd linux-UFRII-drv-v570-us
-yes | sudo bash ./install.sh
+sudo dpkg -i -G --force-overwrite ARM64/Debian/cnrdrvcups-ufr2-us_*.deb
