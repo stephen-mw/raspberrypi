@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# For this to work you need to download the linux-UFRII-drv-v570-us drivers
+# directly from Canon and put them in the root directory.
 if [[ -d "/usr/local/src/linux-UFRII-drv-v570-us" ]]; then
     echo "Drivers already present. Refusing to install."
     exit
