@@ -2,6 +2,11 @@
 - name: scanner playbook
   hosts: all
   become: yes
+  handlers:
+    - name: restart cups
+      ansible.builtin.systemd:
+        name: cups
+        state: restarted
   tasks:
     - name: Set hostname
       ansible.builtin.hostname:
@@ -11,20 +16,45 @@
         update_cache: true
         state: present
         name:
+          - cups-filters
+          - cups-bsd
+          - cups-client
+          - gcc
           - cups
           - libsane1
-          - libcups2
+          - libcups2t64
+          - libcupsimage2t64
+          - libgtk-3-0t64
+          - lsb-release
           - printer-driver-gutenprint
           - sane-utils
+    - name: Check Canon driver package status
+      ansible.builtin.command:
+        cmd: dpkg-query -W -f=${Status} cnrdrvcups-ufr2-us
+      register: canon_driver_pkg
+      changed_when: false
+      failed_when: false
     - name: setup canon printer drivers
       ansible.builtin.copy:
         src: linux-UFRII-drv-v570-us-18.tar.gz
         dest: /usr/local/src/
-    # This will exit code failure the first time
-    - name: install drivers
-      script: install_drivers
-      environment:
-        DRIVERS: "linux-UFRII-drv-v570-us-18"
+      when: canon_driver_pkg.stdout != "install ok installed"
+    - name: Unpack Canon driver archive
+      ansible.builtin.unarchive:
+        src: /usr/local/src/linux-UFRII-drv-v570-us-18.tar.gz
+        dest: /usr/local/src/
+        remote_src: true
+        creates: /usr/local/src/linux-UFRII-drv-v570-us/install.sh
+      when: canon_driver_pkg.stdout != "install ok installed"
+    - name: Install Canon UFRII driver package
+      ansible.builtin.apt:
+        deb: /usr/local/src/linux-UFRII-drv-v570-us/ARM64/Debian/cnrdrvcups-ufr2-us_5.70-1.18_arm64.deb
+        state: present
+      when: canon_driver_pkg.stdout != "install ok installed"
+    - name: Repair packages after Canon driver install
+      ansible.builtin.apt:
+        state: fixed
+      when: canon_driver_pkg.stdout != "install ok installed"
     - name: create user
       ansible.builtin.user:
         name: scanny
@@ -38,11 +68,39 @@
         home: /etc/scanny
     - name: Allow anyone to print
       command: cupsctl --remote-any
-    - name: Make sure scanny user can modify/admin CUPS
+    - name: Allow local subnet to access CUPS admin without auth
       replace:
         path: /etc/cups/cupsd.conf
-        regexp: '^    Require user @SYSTEM'
-        replace: '    Require user @SYSTEM scanny'
+        regexp: '(?s)<Location /admin>\n.*?</Location>'
+        replace: |
+          <Location /admin>
+            Encryption Never
+            Order allow,deny
+            Allow from 10.10.10.0/24
+          </Location>
+      notify: restart cups
+    - name: Allow local subnet to access CUPS admin config without auth
+      replace:
+        path: /etc/cups/cupsd.conf
+        regexp: '(?s)<Location /admin/conf>\n.*?</Location>'
+        replace: |
+          <Location /admin/conf>
+            Encryption Never
+            Order allow,deny
+            Allow from 10.10.10.0/24
+          </Location>
+      notify: restart cups
+    - name: Allow local subnet to access CUPS admin logs without auth
+      replace:
+        path: /etc/cups/cupsd.conf
+        regexp: '(?s)<Location /admin/log>\n.*?</Location>'
+        replace: |
+          <Location /admin/log>
+            Encryption Never
+            Order allow,deny
+            Allow from 10.10.10.0/24
+          </Location>
+      notify: restart cups
     - name: Add scan command script
       copy:
         dest: /usr/local/bin/scan
@@ -59,26 +117,169 @@
         path: /etc/cups/cupsd.conf
         regexp: 'Allow all'
         replace: 'Allow from 10.10.10.0/24'
-    - name: Set CUPS to listen on port 80
-      lineinfile:
+      notify: restart cups
+    - name: Remove distro-managed CUPS listener and UI defaults
+      ansible.builtin.replace:
         path: /etc/cups/cupsd.conf
-        regexp: '^Port 631'
-        line: 'Port 80'
-    - name: Enable CUPS web interface
-      lineinfile:
+        regexp: '(?m)^(Port .+|Listen /run/cups/cups\.sock|Browsing .+|WebInterface .+|DefaultPaperSize .+)\n'
+        replace: ''
+      notify: restart cups
+    - name: Configure CUPS listener and UI defaults
+      ansible.builtin.blockinfile:
         path: /etc/cups/cupsd.conf
-        regexp: '^WebInterface'
-        line: 'WebInterface Yes'
-    - name: Enable CUPS browsing
-      lineinfile:
+        insertbefore: '^IdleExitTimeout'
+        marker: '# {mark} ANSIBLE MANAGED CUPS BASICS'
+        block: |
+          Listen 0.0.0.0:80
+          Listen /run/cups/cups.sock
+          Browsing Yes
+          DefaultEncryption Never
+          WebInterface Yes
+          DefaultPaperSize Letter
+      notify: restart cups
+    - name: Allow unauthenticated printer admin operations in default policy
+      replace:
         path: /etc/cups/cupsd.conf
-        regexp: '^Browsing'
-        line: 'Browsing Yes'
-    - name: Add D530 printer
-      command: lpadmin -p D530 -E -v "usb://Canon/D530/D560?serial=1128L3600730&interface=1" -m "canonufr2-drv:0/cnd530.ppd"
+        regexp: '(?s)<Limit CUPS-Add-Modify-Printer CUPS-Delete-Printer CUPS-Add-Modify-Class CUPS-Delete-Class CUPS-Set-Default CUPS-Get-Devices>\n.*?</Limit>'
+        replace: |
+          <Limit CUPS-Add-Modify-Printer CUPS-Delete-Printer CUPS-Add-Modify-Class CUPS-Delete-Class CUPS-Set-Default CUPS-Get-Devices>
+            Order deny,allow
+          </Limit>
+      notify: restart cups
+    - name: Allow unauthenticated queue control operations in default policy
+      replace:
+        path: /etc/cups/cupsd.conf
+        regexp: '(?s)<Limit Pause-Printer Resume-Printer Enable-Printer Disable-Printer Pause-Printer-After-Current-Job Hold-New-Jobs Release-Held-New-Jobs Deactivate-Printer Activate-Printer Restart-Printer Shutdown-Printer Startup-Printer Promote-Job Schedule-Job-After Cancel-Jobs CUPS-Accept-Jobs CUPS-Reject-Jobs>\n.*?</Limit>'
+        replace: |
+          <Limit Pause-Printer Resume-Printer Enable-Printer Disable-Printer Pause-Printer-After-Current-Job Hold-New-Jobs Release-Held-New-Jobs Deactivate-Printer Activate-Printer Restart-Printer Shutdown-Printer Startup-Printer Promote-Job Schedule-Job-After Cancel-Jobs CUPS-Accept-Jobs CUPS-Reject-Jobs>
+            Order deny,allow
+          </Limit>
+      notify: restart cups
+    - name: Allow unauthenticated printer admin operations in authenticated policy
+      replace:
+        path: /etc/cups/cupsd.conf
+        regexp: '(?s)<Limit CUPS-Add-Modify-Printer CUPS-Delete-Printer CUPS-Add-Modify-Class CUPS-Delete-Class CUPS-Set-Default>\n.*?</Limit>'
+        replace: |
+          <Limit CUPS-Add-Modify-Printer CUPS-Delete-Printer CUPS-Add-Modify-Class CUPS-Delete-Class CUPS-Set-Default>
+            Order deny,allow
+          </Limit>
+      notify: restart cups
+    - name: Copy Dell C1760 driver source files
+      copy:
+        src: dell/foo2zjs/
+        dest: /usr/local/src/foo2zjs-c1760/
+        owner: root
+        group: root
+        mode: preserve
+    - name: Install Dell C1760 foo2hbpl1 filter and PPD
+      ansible.builtin.shell:
+        cmd: |
+          set -euo pipefail
+          cd /usr/local/src/foo2zjs-c1760
+
+          changed=0
+
+          if [ ! -x /usr/bin/foo2hbpl1 ] || \
+             [ foo2hbpl1.c -nt /usr/bin/foo2hbpl1 ] || \
+             [ jbig.c -nt /usr/bin/foo2hbpl1 ] || \
+             [ jbig_ar.c -nt /usr/bin/foo2hbpl1 ] || \
+             [ hbpl.h -nt /usr/bin/foo2hbpl1 ]; then
+            gcc -O2 -Wall -o /usr/bin/foo2hbpl1 foo2hbpl1.c jbig.c jbig_ar.c
+            chmod 0755 /usr/bin/foo2hbpl1
+            changed=1
+          fi
+
+          if [ ! -x /usr/bin/foo2hbpl1-wrapper ] || \
+             [ foo2hbpl1-wrapper.in -nt /usr/bin/foo2hbpl1-wrapper ]; then
+            sed 's@^PREFIX=.*@PREFIX=/usr@' foo2hbpl1-wrapper.in >/usr/bin/foo2hbpl1-wrapper
+            chmod 0755 /usr/bin/foo2hbpl1-wrapper
+            changed=1
+          fi
+
+          if [ ! -x /usr/bin/foo2zjs-pstops ] || \
+             [ foo2zjs-pstops.sh -nt /usr/bin/foo2zjs-pstops ]; then
+            install -m 0755 foo2zjs-pstops.sh /usr/bin/foo2zjs-pstops
+            changed=1
+          fi
+
+          if [ ! -f /usr/share/cups/model/Dell-C1760-foo2hbpl1.ppd ] || \
+             ! cmp -s PPD/Dell-C1760.ppd /usr/share/cups/model/Dell-C1760-foo2hbpl1.ppd; then
+            install -m 0644 PPD/Dell-C1760.ppd /usr/share/cups/model/Dell-C1760-foo2hbpl1.ppd
+            changed=1
+          fi
+
+          if [ "$changed" -eq 1 ]; then
+            echo UPDATED
+          fi
       args:
-        creates: /etc/cups/ppd/D530.ppd
-    - name: Share D530 printer
-      command: lpadmin -p D530 -o printer-is-shared=true
-    - name: Set default paper size to Letter
-      command: lpadmin -p D530 -o PageSize=Letter
+        executable: /bin/bash
+      register: dell_driver_install
+      changed_when: "'UPDATED' in dell_driver_install.stdout"
+    - name: Ensure CUPS is started before queue configuration
+      ansible.builtin.systemd:
+        name: cups
+        state: started
+    - name: Configure D530 printer
+      ansible.builtin.shell:
+        cmd: |
+          set -euo pipefail
+
+          current_uri="$(lpoptions -p D530 2>/dev/null | sed -n 's/.*device-uri=\([^ ]*\).*/\1/p')"
+          current_model="$(lpoptions -p D530 2>/dev/null | sed -n "s/.*printer-make-and-model='\([^']*\)'.*/\1/p")"
+
+          desired_uri='cnusbufr2:/dev/usb/lp0'
+          desired_model='Canon D530/D560'
+
+          changed=0
+
+          if [ "$current_uri" != "$desired_uri" ] || [ "$current_model" != "$desired_model" ]; then
+            lpadmin -p D530 -E -v "$desired_uri" -P /usr/share/cups/model/CNRCUPSD560ZS.ppd
+            changed=1
+          fi
+
+          lpadmin -p D530 -o printer-is-shared=true -o PageSize=Letter -o PageRegion=Letter
+          lpadmin -d D530
+
+          if [ "$changed" -eq 1 ]; then
+            echo UPDATED
+          fi
+      args:
+        executable: /bin/bash
+      register: d530_queue_config
+      changed_when: "'UPDATED' in d530_queue_config.stdout"
+    - name: Configure Dell C1760 USB printer
+      ansible.builtin.shell:
+        cmd: |
+          set -euo pipefail
+
+          lpadmin -x Dell_C1760_test 2>/dev/null || true
+
+          current_uri="$(lpoptions -p Dell_C1760 2>/dev/null | sed -n 's/.*device-uri=\([^ ]*\).*/\1/p')"
+          current_model="$(lpoptions -p Dell_C1760 2>/dev/null | sed -n "s/.*printer-make-and-model='\([^']*\)'.*/\1/p")"
+          current_media="$(lpoptions -p Dell_C1760 2>/dev/null | sed -n 's/.*media=\([^ ]*\).*/\1/p')"
+
+          desired_uri='usb://Dell/C1760nw%20Color%20Printer?serial=ZHC112986'
+          desired_model='Dell C1760 Foomatic/foo2hbpl1 (recommended)'
+
+          changed=0
+
+          if [ "$current_uri" != "$desired_uri" ] || [ "$current_model" != "$desired_model" ]; then
+            lpadmin -p Dell_C1760 -E -v "$desired_uri" -P /usr/share/cups/model/Dell-C1760-foo2hbpl1.ppd
+            changed=1
+          fi
+
+          lpadmin -p Dell_C1760 -o printer-is-shared=true -o PageSize=Letter -o PageRegion=Letter -o ColorMode=Color
+
+          if [ "$current_media" != "na_letter_8.5x11in" ]; then
+            changed=1
+          fi
+
+          if [ "$changed" -eq 1 ]; then
+            echo UPDATED
+          fi
+      args:
+        executable: /bin/bash
+      register: dell_queue_config
+      changed_when: "'UPDATED' in dell_queue_config.stdout"
+    - name: Flush handlers
+      meta: flush_handlers

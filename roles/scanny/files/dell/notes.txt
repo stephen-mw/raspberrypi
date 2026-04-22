@@ -1,0 +1,14 @@
+You need custom drivers from either of these two places:
+fix	git@github.com:Shinbar/foo2zjs.git (fetch)
+fix	git@github.com:Shinbar/foo2zjs.git (push)
+origin	git@github.com:mikerr/foo2zjs.git (fetch)
+origin	git@github.com:mikerr/foo2zjs.git (push)
+
+https://blog.shines.me.uk/dell-1660w-linux-printer-drivers-ubuntu-18-04-lts/
+
+# Then
+make clean
+sudo make uninstall
+make
+sudo make install
+sudo make cups

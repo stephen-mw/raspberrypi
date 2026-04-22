@@ -1,6 +1,8 @@
 ---
 - hosts: all
   become: yes
+  vars_files:
+    - secrets.yml
   tasks:
     # Do this as soon as possible because it can cause http issues
     - name: disable ipv6
@@ -44,6 +46,13 @@
           - unp
           - vim
           - wget
+    - name: Set system paper size to Letter
+      copy:
+        dest: /etc/papersize
+        content: |
+          letter
+        owner: root
+        mode: 0644
     - name: add github known host key
       ansible.builtin.known_hosts:
         name: github.com
@@ -121,7 +130,12 @@
     - name: setup secret envs file in /etc/profile.d/secrets.sh
       copy:
         dest: /etc/profile.d/secrets.sh
-        src: rpirc
+        content: |
+          export MY_EMAIL="{{ my_email }}"
+          export PUSHOVER_TOKEN="{{ pushover_token }}"
+          export PUSHOVER_USER="{{ pushover_user }}"
+          export IMAP_USER="{{ imap_user }}"
+          export IMAP_PASS="{{ imap_pass }}"
     - name: setup cron
       copy:
         dest: /etc/cron.d/ansible
