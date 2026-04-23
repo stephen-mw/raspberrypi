@@ -1,4 +1,4 @@
 default: deploy
 
 deploy:
-	ansible-playbook -i "printy.local," provision.yml
+	ansible-playbook -i "octoprint.local," provision.yml

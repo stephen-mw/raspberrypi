@@ -27,6 +27,7 @@
         name:
           - i2c-tools
           - libsox-fmt-mp3
+          - network-manager
           - pavucontrol
           - rpi-update
           - sox
@@ -37,8 +38,8 @@
       blockinfile:
         dest: /etc/watchdog.conf
         content: |
-          realtime		= yes
-          priority		= 1
+          realtime              = yes
+          priority              = 1
           watchdog-device = /dev/watchdog
           watchdog-timeout = 15
           max-load-1 = 24
@@ -141,3 +142,9 @@
       script: install_wiringpi
       environment:
         ARCH: "{{ ansible_facts['architecture'] }}"
+    - name: Ensure WiFi connection is configured
+      shell: |
+        nmcli device wifi connect "{{ wifi_ssid }}" password "{{ wifi_password }}"
+      register: nmcli_result
+      changed_when: "'successfully activated' in nmcli_result.stdout"
+      failed_when: "nmcli_result.rc != 0 and 'Error: Connection activation failed' not in nmcli_result.stderr"

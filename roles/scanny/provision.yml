@@ -252,8 +252,6 @@
         cmd: |
           set -euo pipefail
 
-          lpadmin -x Dell_C1760_test 2>/dev/null || true
-
           current_uri="$(lpoptions -p Dell_C1760 2>/dev/null | sed -n 's/.*device-uri=\([^ ]*\).*/\1/p')"
           current_model="$(lpoptions -p Dell_C1760 2>/dev/null | sed -n "s/.*printer-make-and-model='\([^']*\)'.*/\1/p")"
           current_media="$(lpoptions -p Dell_C1760 2>/dev/null | sed -n 's/.*media=\([^ ]*\).*/\1/p')"
