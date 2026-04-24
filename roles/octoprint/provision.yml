@@ -3,6 +3,7 @@
   vars:
     ROOT: "/etc/octoprint"
     VENV: "{{ ROOT }}/venv"
+    OCTOPRINT_AUTOLOGIN_USER: "admin"
   become: yes
   tasks:
     - name: install packages
@@ -83,6 +84,43 @@
         owner: octoprint
         recurse: True
         group: octoprint
+    - name: check configured octoprint users
+      ansible.builtin.command:
+        argv:
+          - "{{ VENV }}/bin/octoprint"
+          - "--basedir"
+          - "{{ ROOT }}"
+          - "--config"
+          - "{{ ROOT }}/config.yml"
+          - user
+          - list
+      register: octoprint_users
+      changed_when: false
+      environment:
+        HOME: "{{ ROOT }}"
+    - name: create local autologin admin user
+      ansible.builtin.shell: |
+        password="$(sha256sum /etc/machine-id | awk '{print $1}')"
+        "{{ VENV }}/bin/octoprint" \
+          --basedir "{{ ROOT }}" \
+          --config "{{ ROOT }}/config.yml" \
+          user add "{{ OCTOPRINT_AUTOLOGIN_USER }}" \
+          --password "$password" \
+          --admin
+      args:
+        executable: /bin/bash
+      no_log: true
+      when: octoprint_users.stdout is not search('^' ~ OCTOPRINT_AUTOLOGIN_USER ~ '$', multiline=True)
+      environment:
+        HOME: "{{ ROOT }}"
+      notify:
+        - restart octoprint service
+    - name: restore octoprint ownership after user setup
+      ansible.builtin.file:
+        path: "{{ ROOT }}"
+        owner: octoprint
+        group: octoprint
+        recurse: true
     # Start the service
     - name: Download octoprint systemd unit
       ansible.builtin.template:
@@ -102,4 +140,3 @@
         state: restarted
         name: octoprint
         enabled: yes
-
